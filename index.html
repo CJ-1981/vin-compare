@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VIN Tri-Panel Comparator & Test Vehicle Filter</title>
+  <!-- Optional SheetJS for XLSX support with fallback -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    :root {
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --bg-tertiary: #334155;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --border-color: #334155;
+      --border-focus: #38bdf8;
+      
+      --accent-blue: #38bdf8;
+      --accent-green: #34d399;
+      --accent-amber: #fbbf24;
+      --accent-red: #f87171;
+      --accent-purple: #c084fc;
+      
+      --badge-matched-bg: rgba(52, 211, 153, 0.15);
+      --badge-matched-text: #34d399;
+      --badge-diff-bg: rgba(251, 191, 36, 0.15);
+      --badge-diff-text: #fbbf24;
+      --badge-test-bg: rgba(192, 132, 252, 0.15);
+      --badge-test-text: #c084fc;
+
+      --panel-a-border: #0284c7;
+      --panel-b-border: #0d9488;
+      --panel-c-border: #9333ea;
+      
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    [data-theme="light"] {
+      --bg-primary: #f1f5f9;
+      --bg-secondary: #ffffff;
+      --bg-tertiary: #e2e8f0;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #94a3b8;
+      --border-color: #cbd5e1;
+      --border-focus: #0284c7;
+      
+      --badge-matched-bg: #d1fae5;
+      --badge-matched-text: #065f46;
+      --badge-diff-bg: #fef3c7;
+      --badge-diff-text: #92400e;
+      --badge-test-bg: #f3e8ff;
+      --badge-test-text: #6b21a8;
+
+      --panel-a-border: #38bdf8;
+      --panel-b-border: #2dd4bf;
+      --panel-c-border: #c084fc;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font-family);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    header {
+      background-color: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+      padding: 12px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .brand-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+    }
+
+    .brand-badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      background: var(--bg-tertiary);
+      color: var(--accent-blue);
+      border: 1px solid var(--border-color);
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.825rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid var(--border-color);
+      background-color: var(--bg-tertiary);
+      color: var(--text-primary);
+      transition: all 0.15s ease;
+    }
+    .btn:hover {
+      filter: brightness(1.15);
+      border-color: var(--border-focus);
+    }
+    .btn-primary {
+      background-color: #0284c7;
+      color: #ffffff;
+      border-color: #0369a1;
+    }
+    .btn-success {
+      background-color: #059669;
+      color: #ffffff;
+      border-color: #047857;
+    }
+    .btn-danger {
+      background-color: transparent;
+      color: var(--accent-red);
+      border-color: rgba(248, 113, 113, 0.3);
+    }
+    .btn-danger:hover {
+      background-color: rgba(248, 113, 113, 0.15);
+    }
+    .btn-sm {
+      padding: 4px 8px;
+      font-size: 0.75rem;
+    }
+
+    /* Metrics Summary Bar */
+    #metrics-summary {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .metric-pill {
+      background-color: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      padding: 6px 12px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      flex: 1;
+      min-width: 140px;
+    }
+    .metric-label {
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+    .metric-value {
+      font-weight: 700;
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      margin-left: auto;
+    }
+
+    /* Main Tri-Panel Grid */
+    main {
+      flex: 1;
+      padding: 16px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      overflow-x: auto;
+    }
+
+    @media (max-width: 1100px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .panel {
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      min-height: 600px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      position: relative;
+    }
+
+    .panel-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    #panel-a { border-top: 4px solid var(--panel-a-border); }
+    #panel-b { border-top: 4px solid var(--panel-b-border); }
+    #panel-c { border-top: 4px solid var(--panel-c-border); }
+
+    .panel-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .panel-title {
+      font-weight: 600;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-count {
+      font-size: 0.75rem;
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+    }
+
+    .panel-toolbar {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .panel-filter-search {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .search-input {
+      flex: 1;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+    }
+    .search-input:focus {
+      outline: none;
+      border-color: var(--border-focus);
+    }
+
+    .filter-select {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 5px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+
+    /* Table Container */
+    .table-container {
+      flex: 1;
+      overflow-y: auto;
+      max-height: calc(100vh - 280px);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+      text-align: left;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      background-color: var(--bg-tertiary);
+      color: var(--text-secondary);
+      font-weight: 600;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border-color);
+      z-index: 10;
+    }
+
+    td {
+      padding: 6px 10px;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: middle;
+    }
+
+    tr:hover td {
+      background-color: rgba(255, 255, 255, 0.02);
+    }
+
+    .vin-cell {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .copy-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+    }
+    .copy-btn:hover {
+      color: var(--accent-blue);
+      background: var(--bg-tertiary);
+    }
+
+    .note-input {
+      width: 100%;
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-primary);
+      padding: 4px 6px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+    }
+    .note-input:focus {
+      background: var(--bg-primary);
+      border-color: var(--border-focus);
+      outline: none;
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .badge-matched { background: var(--badge-matched-bg); color: var(--badge-matched-text); }
+    .badge-diff { background: var(--badge-diff-bg); color: var(--badge-diff-text); }
+    .badge-test { background: var(--badge-test-bg); color: var(--badge-test-text); }
+    .badge-neutral { background: var(--bg-tertiary); color: var(--text-secondary); }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(2px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+      padding: 20px;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      width: 100%;
+      max-width: 620px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+      max-height: 90vh;
+      overflow: hidden;
+    }
+
+    .modal-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+    .close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.25rem;
+      cursor: pointer;
+    }
+
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .dropzone {
+      border: 2px dashed var(--border-color);
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      color: var(--text-secondary);
+      cursor: pointer;
+      background: var(--bg-primary);
+      transition: all 0.2s ease;
+    }
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--border-focus);
+      color: var(--text-primary);
+    }
+
+    .paste-area {
+      width: 100%;
+      height: 160px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 10px;
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      resize: vertical;
+    }
+    .paste-area:focus {
+      outline: none;
+      border-color: var(--border-focus);
+    }
+
+    .modal-footer {
+      padding: 12px 20px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      background: var(--bg-primary);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 10px 16px;
+      border-radius: 8px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      font-size: 0.85rem;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
+      z-index: 200;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.25s ease;
+      pointer-events: none;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="header-top">
+      <div class="brand-title">
+        <span>🚗 VIN Comparator</span>
+        <span class="brand-badge">3-Panel Diff & Test Vehicles</span>
+      </div>
+      <div class="header-actions">
+        <button id="export-master-btn" class="btn btn-success" onclick="exportMasterExcel()">
+          📥 Master Excel (.xlsx)
+        </button>
+        <button class="btn" onclick="exportMasterCSV()">
+          📄 Master CSV
+        </button>
+        <button class="btn" onclick="backupWorkspaceJSON()">
+          💾 Backup JSON
+        </button>
+        <button class="btn" onclick="document.getElementById('restore-file-input').click()">
+          📂 Restore
+        </button>
+        <input type="file" id="restore-file-input" accept=".json" style="display:none" onchange="restoreWorkspaceJSON(event)">
+        <button class="btn btn-danger" onclick="confirmClearAll()">
+          🗑️ Clear All
+        </button>
+        <button class="btn" onclick="toggleTheme()">
+          🌓 <span id="theme-btn-label">Theme</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Live Metrics Summary Bar -->
+    <div id="metrics-summary">
+      <div class="metric-pill" style="border-left: 3px solid var(--panel-a-border);">
+        <span class="metric-label">List A Total:</span>
+        <span id="metric-a" class="metric-value">0</span>
+      </div>
+      <div class="metric-pill" style="border-left: 3px solid var(--panel-b-border);">
+        <span class="metric-label">List B Total:</span>
+        <span id="metric-b" class="metric-value">0</span>
+      </div>
+      <div class="metric-pill" style="border-left: 3px solid var(--accent-green);">
+        <span class="metric-label">✅ Matched (A ∩ B):</span>
+        <span id="metric-matched" class="metric-value">0</span>
+      </div>
+      <div class="metric-pill" style="border-left: 3px solid var(--accent-amber);">
+        <span class="metric-label">⚠️ Only in List A:</span>
+        <span id="metric-only-a" class="metric-value">0</span>
+      </div>
+      <div class="metric-pill" style="border-left: 3px solid var(--accent-amber);">
+        <span class="metric-label">⚠️ Only in List B:</span>
+        <span id="metric-only-b" class="metric-value">0</span>
+      </div>
+      <div class="metric-pill" style="border-left: 3px solid var(--panel-c-border);">
+        <span class="metric-label">🧪 Test Vehicles (C):</span>
+        <span id="metric-c" class="metric-value">0</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Tri-Panel Main Content -->
+  <main>
+    <!-- Panel A -->
+    <section id="panel-a" class="panel">
+      <div class="panel-header">
+        <div class="panel-title-row">
+          <span class="panel-title">List A (Baseline) <span id="count-a" class="panel-count">0</span></span>
+          <div class="panel-toolbar">
+            <button class="btn btn-sm btn-primary" onclick="openImportModal('listA', 'List A')">+ Import</button>
+            <button class="btn btn-sm" onclick="promptAddSingle('listA')">+ Add</button>
+            <button class="btn btn-sm" onclick="copyPanelVins('listA')">📋 Copy</button>
+            <button class="btn btn-sm btn-danger" onclick="clearList('listA')">Clear</button>
+          </div>
+        </div>
+        <div class="panel-filter-search">
+          <input type="text" id="search-a" class="search-input" placeholder="Search VIN or Note..." oninput="renderPanel('listA')">
+          <select id="filter-a" class="filter-select" onchange="renderPanel('listA')">
+            <option value="ALL">All Statuses</option>
+            <option value="MATCHED">Matched</option>
+            <option value="ONLY_IN_A">Only in A</option>
+            <option value="TEST_VEHICLE">Test Vehicle (Ignored)</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 36px;">#</th>
+              <th>VIN</th>
+              <th style="width: 100px;">Status</th>
+              <th>Note (Editable)</th>
+              <th style="width: 32px;"></th>
+            </tr>
+          </thead>
+          <tbody id="tbody-a"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Panel B -->
+    <section id="panel-b" class="panel">
+      <div class="panel-header">
+        <div class="panel-title-row">
+          <span class="panel-title">List B (Comparison) <span id="count-b" class="panel-count">0</span></span>
+          <div class="panel-toolbar">
+            <button class="btn btn-sm btn-primary" onclick="openImportModal('listB', 'List B')">+ Import</button>
+            <button class="btn btn-sm" onclick="promptAddSingle('listB')">+ Add</button>
+            <button class="btn btn-sm" onclick="copyPanelVins('listB')">📋 Copy</button>
+            <button class="btn btn-sm btn-danger" onclick="clearList('listB')">Clear</button>
+          </div>
+        </div>
+        <div class="panel-filter-search">
+          <input type="text" id="search-b" class="search-input" placeholder="Search VIN or Note..." oninput="renderPanel('listB')">
+          <select id="filter-b" class="filter-select" onchange="renderPanel('listB')">
+            <option value="ALL">All Statuses</option>
+            <option value="MATCHED">Matched</option>
+            <option value="ONLY_IN_B">Only in B</option>
+            <option value="TEST_VEHICLE">Test Vehicle (Ignored)</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 36px;">#</th>
+              <th>VIN</th>
+              <th style="width: 100px;">Status</th>
+              <th>Note (Editable)</th>
+              <th style="width: 32px;"></th>
+            </tr>
+          </thead>
+          <tbody id="tbody-b"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Panel C: Test Vehicles -->
+    <section id="panel-c" class="panel">
+      <div class="panel-header">
+        <div class="panel-title-row">
+          <span class="panel-title">List C (Test Vehicles) <span id="count-c" class="panel-count">0</span></span>
+          <div class="panel-toolbar">
+            <button class="btn btn-sm btn-primary" onclick="openImportModal('listC', 'List C (Test Vehicles)')">+ Import</button>
+            <button class="btn btn-sm" onclick="promptAddSingle('listC')">+ Add</button>
+            <button class="btn btn-sm" onclick="copyPanelVins('listC')">📋 Copy</button>
+            <button class="btn btn-sm btn-danger" onclick="clearList('listC')">Clear</button>
+          </div>
+        </div>
+        <div class="panel-filter-search">
+          <input type="text" id="search-c" class="search-input" placeholder="Search VIN or Note..." oninput="renderPanel('listC')">
+          <select id="filter-c" class="filter-select" onchange="renderPanel('listC')">
+            <option value="ALL">All Reference Items</option>
+            <option value="IN_A_AND_B">Found in Both A & B</option>
+            <option value="IN_A_ONLY">Found in A Only</option>
+            <option value="IN_B_ONLY">Found in B Only</option>
+            <option value="NOT_IN_A_OR_B">Not Found in A/B</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 36px;">#</th>
+              <th>VIN (Test Car)</th>
+              <th style="width: 110px;">Detected In</th>
+              <th>Note (Editable)</th>
+              <th style="width: 32px;"></th>
+            </tr>
+          </thead>
+          <tbody id="tbody-c"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- Import Modal -->
+  <div id="batch-paste-modal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-target-title" class="modal-title">Import VINs</h3>
+        <button class="close-btn" onclick="closeImportModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="modal-dropzone" class="dropzone" onclick="document.getElementById('modal-file-input').click()">
+          📁 Drag & drop an Excel (.xlsx, .xls) or CSV / Text file here, or <b>Click to browse</b>
+        </div>
+        <input type="file" id="modal-file-input" accept=".xlsx,.xls,.csv,.txt" style="display:none" onchange="handleFileSelect(event)">
+        
+        <div>
+          <label style="font-size:0.8rem; font-weight:600; color:var(--text-secondary); display:block; margin-bottom:6px;">
+            Or paste text below (Newlines, Tabs, or Commas. Optional 2nd column for Notes):
+          </label>
+          <textarea id="modal-paste-area" class="paste-area" placeholder="WBA1234567890ABCD    Optional Note Here&#10;XYZ9876543210QWER    Prototype Battery Test"></textarea>
+        </div>
+
+        <div style="display: flex; gap: 16px; align-items: center; font-size: 0.85rem;">
+          <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+            <input type="radio" name="import-mode" value="append" checked> Append to existing list
+          </label>
+          <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+            <input type="radio" name="import-mode" value="replace"> Replace entire list
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="closeImportModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="submitImport()">Import VINs</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast">Saved</div>
+
+  <!-- Application Logic -->
+  <script>
+    const STORAGE_KEY = 'vin_compare_app_state_v1';
+    let currentModalTarget = 'listA';
+
+    let state = {
+      listA: [],
+      listB: [],
+      listC: [],
+      settings: {
+        theme: 'dark',
+        autoTrimUpper: true,
+        skipTestVehiclesInDiff: true
+      }
+    };
+
+    let comparison = {
+      statusMapA: new Map(),
+      statusMapB: new Map(),
+      statusMapC: new Map(),
+      stats: { totalA:0, totalB:0, totalC:0, matched:0, onlyA:0, onlyB:0, testIgnoredInA:0, testIgnoredInB:0 }
+    };
+
+    // ----------------- Core Engine Helpers ----------------- //
+    function normalizeVin(vin) {
+      if (!vin) return '';
+      return String(vin).trim().toUpperCase().replace(/[^A-Z0-9]/gi, '');
+    }
+
+    function parsePastedText(text) {
+      if (!text || typeof text !== 'string') return [];
+      const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      const results = [];
+
+      for (const line of lines) {
+        let vin = '';
+        let note = '';
+
+        if (line.includes('\t')) {
+          const parts = line.split('\t');
+          vin = normalizeVin(parts[0]);
+          note = parts.slice(1).join('\t').trim();
+        } else if (line.includes(',') && !line.startsWith('"')) {
+          const parts = line.split(',');
+          vin = normalizeVin(parts[0]);
+          note = parts.slice(1).join(',').trim();
+        } else if (line.includes(';') && !line.startsWith('"')) {
+          const parts = line.split(';');
+          vin = normalizeVin(parts[0]);
+          note = parts.slice(1).join(';').trim();
+        } else {
+          vin = normalizeVin(line);
+        }
+
+        if (vin) {
+          results.push({ vin, note });
+        }
+      }
+      return results;
+    }
+
+    function computeComparison(listA = [], listB = [], listC = []) {
+      const setC = new Set(listC.map(r => r.vin).filter(Boolean));
+      const setB = new Set(listB.map(r => r.vin).filter(Boolean));
+      const setA = new Set(listA.map(r => r.vin).filter(Boolean));
+
+      const statusMapA = new Map();
+      const statusMapB = new Map();
+      const statusMapC = new Map();
+
+      const stats = {
+        totalA: listA.length,
+        totalB: listB.length,
+        totalC: listC.length,
+        matched: 0,
+        onlyA: 0,
+        onlyB: 0,
+        testIgnoredInA: 0,
+        testIgnoredInB: 0
+      };
+
+      for (const item of listA) {
+        if (setC.has(item.vin)) {
+          statusMapA.set(item.id, 'TEST_VEHICLE');
+          stats.testIgnoredInA++;
+        } else if (setB.has(item.vin)) {
+          statusMapA.set(item.id, 'MATCHED');
+          stats.matched++;
+        } else {
+          statusMapA.set(item.id, 'ONLY_IN_A');
+          stats.onlyA++;
+        }
+      }
+
+      for (const item of listB) {
+        if (setC.has(item.vin)) {
+          statusMapB.set(item.id, 'TEST_VEHICLE');
+          stats.testIgnoredInB++;
+        } else if (setA.has(item.vin)) {
+          statusMapB.set(item.id, 'MATCHED');
+        } else {
+          statusMapB.set(item.id, 'ONLY_IN_B');
+          stats.onlyB++;
+        }
+      }
+
+      for (const item of listC) {
+        const inA = setA.has(item.vin);
+        const inB = setB.has(item.vin);
+        if (inA && inB) statusMapC.set(item.id, 'IN_A_AND_B');
+        else if (inA) statusMapC.set(item.id, 'IN_A_ONLY');
+        else if (inB) statusMapC.set(item.id, 'IN_B_ONLY');
+        else statusMapC.set(item.id, 'NOT_IN_A_OR_B');
+      }
+
+      return { statusMapA, statusMapB, statusMapC, stats };
+    }
+
+    // ----------------- State & Persistence ----------------- //
+    let saveTimeout = null;
+    function scheduleSave() {
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(() => {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+          showToast('Changes saved locally');
+        } catch (e) {
+          console.error('Storage error:', e);
+        }
+      }, 300);
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          state.listA = Array.isArray(parsed.listA) ? parsed.listA : [];
+          state.listB = Array.isArray(parsed.listB) ? parsed.listB : [];
+          state.listC = Array.isArray(parsed.listC) ? parsed.listC : [];
+          if (parsed.settings) state.settings = { ...state.settings, ...parsed.settings };
+        }
+      } catch (e) {
+        console.error('Failed to load state', e);
+      }
+      applyTheme(state.settings.theme);
+      recalculateAndRender();
+    }
+
+    function recalculateAndRender() {
+      comparison = computeComparison(state.listA, state.listB, state.listC);
+      updateMetricsUI();
+      renderPanel('listA');
+      renderPanel('listB');
+      renderPanel('listC');
+      scheduleSave();
+    }
+
+    function updateMetricsUI() {
+      document.getElementById('metric-a').textContent = comparison.stats.totalA;
+      document.getElementById('metric-b').textContent = comparison.stats.totalB;
+      document.getElementById('metric-c').textContent = comparison.stats.totalC;
+      document.getElementById('metric-matched').textContent = comparison.stats.matched;
+      document.getElementById('metric-only-a').textContent = comparison.stats.onlyA;
+      document.getElementById('metric-only-b').textContent = comparison.stats.onlyB;
+
+      document.getElementById('count-a').textContent = state.listA.length;
+      document.getElementById('count-b').textContent = state.listB.length;
+      document.getElementById('count-c').textContent = state.listC.length;
+    }
+
+    function getBadgeHTML(status, listKey) {
+      if (listKey === 'listC') {
+        switch(status) {
+          case 'IN_A_AND_B': return '<span class="badge badge-test">Both A & B</span>';
+          case 'IN_A_ONLY': return '<span class="badge badge-diff">In A Only</span>';
+          case 'IN_B_ONLY': return '<span class="badge badge-diff">In B Only</span>';
+          default: return '<span class="badge badge-neutral">Not in A/B</span>';
+        }
+      }
+      switch (status) {
+        case 'MATCHED': return '<span class="badge badge-matched">Matched</span>';
+        case 'ONLY_IN_A': return '<span class="badge badge-diff">Only in A</span>';
+        case 'ONLY_IN_B': return '<span class="badge badge-diff">Only in B</span>';
+        case 'TEST_VEHICLE': return '<span class="badge badge-test">Test Car</span>';
+        default: return '<span class="badge badge-neutral">-</span>';
+      }
+    }
+
+    function renderPanel(listKey) {
+      const tbodyId = listKey === 'listA' ? 'tbody-a' : (listKey === 'listB' ? 'tbody-b' : 'tbody-c');
+      const searchId = listKey === 'listA' ? 'search-a' : (listKey === 'listB' ? 'search-b' : 'search-c');
+      const filterId = listKey === 'listA' ? 'filter-a' : (listKey === 'listB' ? 'filter-b' : 'filter-c');
+      
+      const tbody = document.getElementById(tbodyId);
+      const searchVal = (document.getElementById(searchId).value || '').toLowerCase().trim();
+      const filterVal = document.getElementById(filterId).value;
+
+      const list = state[listKey] || [];
+      const statusMap = listKey === 'listA' ? comparison.statusMapA : (listKey === 'listB' ? comparison.statusMapB : comparison.statusMapC);
+
+      const filtered = list.filter((item, index) => {
+        const status = statusMap.get(item.id);
+        if (filterVal !== 'ALL' && status !== filterVal) return false;
+        if (searchVal) {
+          const matchVin = item.vin.toLowerCase().includes(searchVal);
+          const matchNote = (item.note || '').toLowerCase().includes(searchVal);
+          return matchVin || matchNote;
+        }
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 24px; color: var(--text-muted);">No records to display</td></tr>`;
+        return;
+      }
+
+      let html = '';
+      filtered.forEach((item, idx) => {
+        const status = statusMap.get(item.id);
+        const badge = getBadgeHTML(status, listKey);
+        html += `
+          <tr>
+            <td style="color: var(--text-muted); font-size: 0.75rem;">${idx + 1}</td>
+            <td>
+              <div class="vin-cell">
+                <span>${escapeHtml(item.vin)}</span>
+                <button class="copy-btn" title="Copy VIN" onclick="copyText('${escapeHtml(item.vin)}')">📋</button>
+              </div>
+            </td>
+            <td>${badge}</td>
+            <td>
+              <input type="text" class="note-input" value="${escapeHtml(item.note || '')}" 
+                placeholder="Add note..."
+                onchange="updateNote('${listKey}', '${item.id}', this.value)">
+            </td>
+            <td style="text-align:center;">
+              <button class="btn-danger" style="border:none; cursor:pointer; font-size:0.85rem;" title="Delete" onclick="deleteItem('${listKey}', '${item.id}')">✕</button>
+            </td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = html;
+    }
+
+    function updateNote(listKey, id, note) {
+      const item = state[listKey].find(r => r.id === id);
+      if (item) {
+        item.note = note;
+        scheduleSave();
+      }
+    }
+
+    function deleteItem(listKey, id) {
+      state[listKey] = state[listKey].filter(r => r.id !== id);
+      recalculateAndRender();
+    }
+
+    function clearList(listKey) {
+      if (state[listKey].length === 0) return;
+      if (confirm(`Are you sure you want to clear ${listKey.toUpperCase()}?`)) {
+        state[listKey] = [];
+        recalculateAndRender();
+      }
+    }
+
+    function promptAddSingle(listKey) {
+      const vinInput = prompt("Enter Vehicle Identification Number (VIN):");
+      if (!vinInput) return;
+      const vin = normalizeVin(vinInput);
+      if (!vin) return;
+      const note = prompt("Enter optional note for " + vin + ":") || '';
+      state[listKey].push({
+        id: Math.random().toString(36).substring(2, 9) + Date.now().toString(36),
+        vin,
+        rawVin: vinInput,
+        note,
+        addedAt: Date.now()
+      });
+      recalculateAndRender();
+    }
+
+    function copyPanelVins(listKey) {
+      const list = state[listKey] || [];
+      if (list.length === 0) {
+        showToast('List is empty');
+        return;
+      }
+      const text = list.map(r => r.note ? `${r.vin}\t${r.note}` : r.vin).join('\n');
+      copyText(text);
+      showToast(`Copied ${list.length} items to clipboard`);
+    }
+
+    // ----------------- Import Modal Logic ----------------- //
+    function openImportModal(listKey, title) {
+      currentModalTarget = listKey;
+      document.getElementById('modal-target-title').textContent = 'Import into ' + title;
+      document.getElementById('modal-paste-area').value = '';
+      document.getElementById('modal-file-input').value = '';
+      document.getElementById('batch-paste-modal').classList.add('active');
+    }
+
+    function closeImportModal() {
+      document.getElementById('batch-paste-modal').classList.remove('active');
+    }
+
+    function submitImport() {
+      const pasteText = document.getElementById('modal-paste-area').value;
+      const mode = document.querySelector('input[name="import-mode"]:checked').value;
+      const parsed = parsePastedText(pasteText);
+
+      if (parsed.length === 0) {
+        alert("Please paste or upload at least one valid VIN.");
+        return;
+      }
+
+      const records = parsed.map(item => ({
+        id: Math.random().toString(36).substring(2, 9) + Date.now().toString(36),
+        vin: item.vin,
+        rawVin: item.vin,
+        note: item.note || '',
+        addedAt: Date.now()
+      }));
+
+      if (mode === 'replace') {
+        state[currentModalTarget] = records;
+      } else {
+        // Append mode (prevent direct exact duplicate ID collisions)
+        state[currentModalTarget] = [...state[currentModalTarget], ...records];
+      }
+
+      closeImportModal();
+      recalculateAndRender();
+      showToast(`Imported ${records.length} VINs successfully`);
+    }
+
+    // Drag and Drop & File Upload handling
+    const dropzone = document.getElementById('modal-dropzone');
+    dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('dragover'); });
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+      if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+    });
+
+    function handleFileSelect(event) {
+      if (event.target.files.length) handleFile(event.target.files[0]);
+    }
+
+    function handleFile(file) {
+      const reader = new FileReader();
+      const isExcel = file.name.endsWith('.xlsx') || file.name.endsWith('.xls');
+
+      if (isExcel && typeof XLSX !== 'undefined') {
+        reader.onload = (e) => {
+          try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+            
+            let textBuffer = [];
+            for (const row of rows) {
+              if (Array.isArray(row) && row.length > 0) {
+                const col0 = String(row[0] || '').trim();
+                const col1 = row.length > 1 ? String(row[1] || '').trim() : '';
+                if (col0) textBuffer.push(col1 ? `${col0}\t${col1}` : col0);
+              }
+            }
+            document.getElementById('modal-paste-area').value = textBuffer.join('\n');
+            showToast(`Loaded ${textBuffer.length} rows from Excel`);
+          } catch (err) {
+            alert('Error parsing Excel spreadsheet: ' + err.message);
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      } else {
+        reader.onload = (e) => {
+          document.getElementById('modal-paste-area').value = e.target.result;
+          showToast(`Loaded file ${file.name}`);
+        };
+        reader.readAsText(file);
+      }
+    }
+
+    // ----------------- Export Capabilities ----------------- //
+    function exportMasterExcel() {
+      if (typeof XLSX === 'undefined') {
+        alert('SheetJS is loading or unavailable; exporting Master CSV instead.');
+        exportMasterCSV();
+        return;
+      }
+
+      const wb = XLSX.utils.book_new();
+
+      // Summary Sheet
+      const summaryData = [
+        ['Metric', 'Count'],
+        ['Total in List A', state.listA.length],
+        ['Total in List B', state.listB.length],
+        ['Matched Overlap (A & B)', comparison.stats.matched],
+        ['Discrepancies (Only in A)', comparison.stats.onlyA],
+        ['Discrepancies (Only in B)', comparison.stats.onlyB],
+        ['Ignored Test Vehicles in A', comparison.stats.testIgnoredInA],
+        ['Ignored Test Vehicles in B', comparison.stats.testIgnoredInB],
+        ['Total Reference Test Vehicles (C)', state.listC.length]
+      ];
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(summaryData), 'Summary');
+
+      // Matched Sheet
+      const matchedRows = [['VIN', 'Source', 'Note']];
+      state.listA.forEach(r => {
+        if (comparison.statusMapA.get(r.id) === 'MATCHED') {
+          matchedRows.push([r.vin, 'Matched in A & B', r.note || '']);
+        }
+      });
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(matchedRows), 'Matched (A & B)');
+
+      // Only in A
+      const onlyARows = [['VIN', 'Status', 'Note']];
+      state.listA.forEach(r => {
+        if (comparison.statusMapA.get(r.id) === 'ONLY_IN_A') {
+          onlyARows.push([r.vin, 'Only in A', r.note || '']);
+        }
+      });
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(onlyARows), 'Only in List A');
+
+      // Only in B
+      const onlyBRows = [['VIN', 'Status', 'Note']];
+      state.listB.forEach(r => {
+        if (comparison.statusMapB.get(r.id) === 'ONLY_IN_B') {
+          onlyBRows.push([r.vin, 'Only in B', r.note || '']);
+        }
+      });
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(onlyBRows), 'Only in List B');
+
+      // Test Vehicles
+      const testRows = [['VIN', 'Detected Presence', 'Note']];
+      state.listC.forEach(r => {
+        const detected = comparison.statusMapC.get(r.id);
+        testRows.push([r.vin, detected || 'NOT_IN_A_OR_B', r.note || '']);
+      });
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(testRows), 'Test Vehicles (C)');
+
+      const filename = `VIN_Comparison_Report_${new Date().toISOString().slice(0,10)}.xlsx`;
+      XLSX.writeFile(wb, filename);
+      showToast('Exported Master Excel Report');
+    }
+
+    function exportMasterCSV() {
+      const rows = [['List', 'VIN', 'Status', 'Note']];
+      state.listA.forEach(r => rows.push(['List A', r.vin, comparison.statusMapA.get(r.id) || '', r.note || '']));
+      state.listB.forEach(r => rows.push(['List B', r.vin, comparison.statusMapB.get(r.id) || '', r.note || '']));
+      state.listC.forEach(r => rows.push(['List C (Test)', r.vin, comparison.statusMapC.get(r.id) || '', r.note || '']));
+
+      const csvContent = rows.map(r => r.map(f => `"${String(f).replace(/"/g, '""')}"`).join(',')).join('\r\n');
+      downloadFile(csvContent, `VIN_Comparison_Master_${new Date().toISOString().slice(0,10)}.csv`, 'text/csv;charset=utf-8;');
+      showToast('Exported Master CSV Report');
+    }
+
+    // ----------------- Backup & Restore JSON ----------------- //
+    function backupWorkspaceJSON() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+      const filename = `vin_workspace_backup_${new Date().toISOString().slice(0,10)}.json`;
+      const dlAnchor = document.createElement('a');
+      dlAnchor.setAttribute("href", dataStr);
+      dlAnchor.setAttribute("download", filename);
+      dlAnchor.click();
+      showToast('Workspace backup downloaded');
+    }
+
+    function restoreWorkspaceJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (parsed && (parsed.listA || parsed.listB || parsed.listC)) {
+            state.listA = Array.isArray(parsed.listA) ? parsed.listA : [];
+            state.listB = Array.isArray(parsed.listB) ? parsed.listB : [];
+            state.listC = Array.isArray(parsed.listC) ? parsed.listC : [];
+            if (parsed.settings) state.settings = parsed.settings;
+            recalculateAndRender();
+            showToast('Workspace restored successfully');
+          } else {
+            alert('Invalid backup file structure.');
+          }
+        } catch (err) {
+          alert('Error restoring backup JSON: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function confirmClearAll() {
+      if (confirm('Warning: This will clear all VINs and notes across all 3 panels. Continue?')) {
+        state.listA = [];
+        state.listB = [];
+        state.listC = [];
+        recalculateAndRender();
+        showToast('All lists cleared');
+      }
+    }
+
+    // ----------------- Utilities ----------------- //
+    function copyText(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Copied to clipboard');
+      }).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        showToast('Copied to clipboard');
+      });
+    }
+
+    function downloadFile(content, fileName, mimeType) {
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+
+    function toggleTheme() {
+      state.settings.theme = state.settings.theme === 'light' ? 'dark' : 'light';
+      applyTheme(state.settings.theme);
+      scheduleSave();
+    }
+
+    function applyTheme(theme) {
+      if (theme === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+        document.getElementById('theme-btn-label').textContent = 'Dark Mode';
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+        document.getElementById('theme-btn-label').textContent = 'Light Mode';
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // Initialize application on page load
+    window.addEventListener('DOMContentLoaded', loadState);
+  </script>
+</body>
+</html>
