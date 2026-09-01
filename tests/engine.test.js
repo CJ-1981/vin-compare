@@ -15,10 +15,22 @@ test('parsePastedText parses single and multi-column inputs (tabs, commas, newli
   assert.deepEqual(parsed[1], { vin: 'VIN456', note: 'Second vehicle' });
   assert.deepEqual(parsed[2], { vin: 'VIN789', note: '' });
 
-  const csvInput = "VIN001,Note 1\nVIN002,Note 2";
+  const csvInput = "VIN001,Note with details\nVIN002,Another note";
   const parsedCsv = parsePastedText(csvInput);
   assert.equal(parsedCsv.length, 2);
-  assert.deepEqual(parsedCsv[0], { vin: 'VIN001', note: 'Note 1' });
+  assert.deepEqual(parsedCsv[0], { vin: 'VIN001', note: 'Note with details' });
+});
+
+test('parsePastedText parses comma and semicolon separated multiple VIN lists', () => {
+  const commaList = "VIN101, VIN102, VIN103, VIN104";
+  const parsed = parsePastedText(commaList);
+  assert.equal(parsed.length, 4);
+  assert.deepEqual(parsed.map(p => p.vin), ['VIN101', 'VIN102', 'VIN103', 'VIN104']);
+
+  const mixedList = "VIN201, VIN202\nVIN203; VIN204; VIN205\nVIN206";
+  const parsedMixed = parsePastedText(mixedList);
+  assert.equal(parsedMixed.length, 6);
+  assert.deepEqual(parsedMixed.map(p => p.vin), ['VIN201', 'VIN202', 'VIN203', 'VIN204', 'VIN205', 'VIN206']);
 });
 
 test('computeComparison categorizes Matched, Only in A, Only in B, and Test Vehicles correctly', () => {

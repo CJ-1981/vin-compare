@@ -9,27 +9,36 @@ export function parsePastedText(text) {
   const results = [];
 
   for (const line of lines) {
-    let vin = '';
-    let note = '';
-
     if (line.includes('\t')) {
       const parts = line.split('\t');
-      vin = normalizeVin(parts[0]);
-      note = parts.slice(1).join('\t').trim();
-    } else if (line.includes(',') && !line.startsWith('"')) {
-      const parts = line.split(',');
-      vin = normalizeVin(parts[0]);
-      note = parts.slice(1).join(',').trim();
-    } else if (line.includes(';') && !line.startsWith('"')) {
-      const parts = line.split(';');
-      vin = normalizeVin(parts[0]);
-      note = parts.slice(1).join(';').trim();
-    } else {
-      vin = normalizeVin(line);
+      const vin = normalizeVin(parts[0]);
+      const note = parts.slice(1).join('\t').trim();
+      if (vin) results.push({ vin, note });
+      continue;
     }
 
+    const separator = line.includes(';') ? ';' : (line.includes(',') ? ',' : null);
+    if (separator && !line.startsWith('"')) {
+      const rawParts = line.split(separator).map(p => p.trim()).filter(Boolean);
+      
+      // If exactly 2 parts and the 2nd part contains spaces / description (e.g. "Note with details"), treat as VIN + Note
+      if (rawParts.length === 2 && /\s/.test(rawParts[1])) {
+        const vin = normalizeVin(rawParts[0]);
+        const note = rawParts[1];
+        if (vin) results.push({ vin, note });
+      } else {
+        // Otherwise treat each item as a separate VIN in a comma/semicolon-separated list
+        for (const part of rawParts) {
+          const vin = normalizeVin(part);
+          if (vin) results.push({ vin, note: '' });
+        }
+      }
+      continue;
+    }
+
+    const vin = normalizeVin(line);
     if (vin) {
-      results.push({ vin, note });
+      results.push({ vin, note: '' });
     }
   }
   return results;

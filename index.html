@@ -147,6 +147,14 @@
       color: #ffffff;
       border-color: #0369a1;
     }
+    .btn-swap {
+      background-color: #4f46e5;
+      color: #ffffff;
+      border-color: #4338ca;
+    }
+    .btn-swap:hover {
+      background-color: #4338ca;
+    }
     .btn-success {
       background-color: #059669;
       color: #ffffff;
@@ -515,6 +523,9 @@
         <span class="brand-badge">3-Panel Diff & Test Vehicles</span>
       </div>
       <div class="header-actions">
+        <button id="swap-ab-btn" class="btn btn-swap" onclick="swapListsAB()" title="Swap List A and List B contents">
+          ⇄ Swap A & B
+        </button>
         <button id="export-master-btn" class="btn btn-success" onclick="exportMasterExcel()">
           📥 Master Excel (.xlsx)
         </button>
@@ -699,9 +710,9 @@
         
         <div>
           <label style="font-size:0.8rem; font-weight:600; color:var(--text-secondary); display:block; margin-bottom:6px;">
-            Or paste text below (Newlines, Tabs, or Commas. Optional 2nd column for Notes):
+            Or paste text below (Newlines, Tabs, or Commas. Supports multi-VIN comma lists or 2-column VIN + Note):
           </label>
-          <textarea id="modal-paste-area" class="paste-area" placeholder="WBA1234567890ABCD    Optional Note Here&#10;XYZ9876543210QWER    Prototype Battery Test"></textarea>
+          <textarea id="modal-paste-area" class="paste-area" placeholder="WBA1234567890ABCD, XYZ9876543210QWER&#10;or&#10;WBA1234567890ABCD    Optional Note Here"></textarea>
         </div>
 
         <div style="display: flex; gap: 16px; align-items: center; font-size: 0.85rem;">
@@ -758,27 +769,34 @@
       const results = [];
 
       for (const line of lines) {
-        let vin = '';
-        let note = '';
-
         if (line.includes('\t')) {
           const parts = line.split('\t');
-          vin = normalizeVin(parts[0]);
-          note = parts.slice(1).join('\t').trim();
-        } else if (line.includes(',') && !line.startsWith('"')) {
-          const parts = line.split(',');
-          vin = normalizeVin(parts[0]);
-          note = parts.slice(1).join(',').trim();
-        } else if (line.includes(';') && !line.startsWith('"')) {
-          const parts = line.split(';');
-          vin = normalizeVin(parts[0]);
-          note = parts.slice(1).join(';').trim();
-        } else {
-          vin = normalizeVin(line);
+          const vin = normalizeVin(parts[0]);
+          const note = parts.slice(1).join('\t').trim();
+          if (vin) results.push({ vin, note });
+          continue;
         }
 
+        const separator = line.includes(';') ? ';' : (line.includes(',') ? ',' : null);
+        if (separator && !line.startsWith('"')) {
+          const rawParts = line.split(separator).map(p => p.trim()).filter(Boolean);
+          
+          if (rawParts.length === 2 && /\s/.test(rawParts[1])) {
+            const vin = normalizeVin(rawParts[0]);
+            const note = rawParts[1];
+            if (vin) results.push({ vin, note });
+          } else {
+            for (const part of rawParts) {
+              const vin = normalizeVin(part);
+              if (vin) results.push({ vin, note: '' });
+            }
+          }
+          continue;
+        }
+
+        const vin = normalizeVin(line);
         if (vin) {
-          results.push({ vin, note });
+          results.push({ vin, note: '' });
         }
       }
       return results;
@@ -894,6 +912,14 @@
       document.getElementById('count-c').textContent = state.listC.length;
     }
 
+    function swapListsAB() {
+      const temp = state.listA;
+      state.listA = state.listB;
+      state.listB = temp;
+      recalculateAndRender();
+      showToast('Swapped List A and List B');
+    }
+
     function getBadgeHTML(status, listKey) {
       if (listKey === 'listC') {
         switch(status) {
@@ -990,18 +1016,33 @@
     }
 
     function promptAddSingle(listKey) {
-      const vinInput = prompt("Enter Vehicle Identification Number (VIN):");
+      const vinInput = prompt("Enter VIN(s) (supports single VIN, comma/semicolon-separated, or multi-line):");
       if (!vinInput) return;
-      const vin = normalizeVin(vinInput);
-      if (!vin) return;
-      const note = prompt("Enter optional note for " + vin + ":") || '';
-      state[listKey].push({
-        id: Math.random().toString(36).substring(2, 9) + Date.now().toString(36),
-        vin,
-        rawVin: vinInput,
-        note,
-        addedAt: Date.now()
-      });
+      const parsed = parsePastedText(vinInput);
+      if (parsed.length === 0) return;
+      
+      if (parsed.length === 1) {
+        const item = parsed[0];
+        const note = prompt("Enter optional note for " + item.vin + ":", item.note || '') || '';
+        state[listKey].push({
+          id: Math.random().toString(36).substring(2, 9) + Date.now().toString(36),
+          vin: item.vin,
+          rawVin: item.vin,
+          note,
+          addedAt: Date.now()
+        });
+      } else {
+        for (const item of parsed) {
+          state[listKey].push({
+            id: Math.random().toString(36).substring(2, 9) + Date.now().toString(36),
+            vin: item.vin,
+            rawVin: item.vin,
+            note: item.note || '',
+            addedAt: Date.now()
+          });
+        }
+        showToast(`Added ${parsed.length} VINs to ${listKey.toUpperCase()}`);
+      }
       recalculateAndRender();
     }
 
