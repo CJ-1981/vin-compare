@@ -1,5 +1,11 @@
 # 🚗 VIN Tri-Panel Comparator & Test Vehicle Filter `v1.3.0`
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-2ea44f?logo=github&style=flat-square)](https://cj-1981.github.io/vin-compare/)
+[![Deploy to GitHub Pages](https://github.com/CJ-1981/vin-compare/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/CJ-1981/vin-compare/actions/workflows/deploy-pages.yml)
+[![Tests Passing](https://img.shields.io/badge/Tests-9%2F9%20Passing-brightgreen?style=flat-square)](https://github.com/CJ-1981/vin-compare)
+
+> **Live Web App:** [https://cj-1981.github.io/vin-compare/](https://cj-1981.github.io/vin-compare/)
+
 A standalone, high-performance HTML/JS/CSS tool for comparing two lists of Vehicle Identification Numbers (VINs) while ignoring/flagging known test vehicles.
 
 ![VIN Tri-Panel Comparator Screenshot](docs/assets/screenshot.png)
