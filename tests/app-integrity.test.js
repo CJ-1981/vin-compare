@@ -25,7 +25,7 @@ test('index.html exists and contains necessary panels, UI markers, and features'
   assert.match(html, /listNames/);
 
   // Version in title
-  assert.match(html, /v1\.4\.1/i);
+  assert.match(html, /v1\.4\.2/i);
 
   // Column sorting feature & persistence
   assert.match(html, /toggleSort/);
@@ -59,4 +59,10 @@ test('index.html exists and contains necessary panels, UI markers, and features'
 
   // Popover right alignment to prevent overflow past right edge
   assert.match(html, /\.multi-select-popover\s*\{[^}]*right:\s*0/);
+
+  // Note input blur on Enter key
+  assert.match(html, /onkeydown="[^"]*Enter[^"]*blur\(\)/);
+
+  // Timestamp on export files
+  assert.match(html, /getExportTimestampString/);
 });

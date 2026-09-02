@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VIN Tri-Panel Comparator & Test Vehicle Filter v1.4.1</title>
+  <title>VIN Tri-Panel Comparator & Test Vehicle Filter v1.4.2</title>
   <!-- Optional SheetJS for XLSX support with fallback -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
@@ -700,7 +700,7 @@
     <div class="header-top">
       <div class="brand-title">
         <span>🚗 VIN Comparator</span>
-        <span class="version-badge">v1.4.1</span>
+        <span class="version-badge">v1.4.2</span>
         <span class="brand-badge">3-Panel Diff & Test Vehicles</span>
       </div>
       <div class="header-actions">
@@ -1601,6 +1601,7 @@
             <td>
               <input type="text" class="note-input" value="${escapeHtml(item.note || '')}" 
                 placeholder="Add note..."
+                onkeydown="if(event.key==='Enter'){ this.blur(); }"
                 onchange="updateNote('${listKey}', '${item.id}', this.value)">
             </td>
             <td style="text-align:center;">
@@ -1784,6 +1785,18 @@
       return (clean || fallback).substring(0, 31);
     }
 
+    function getExportTimestampString() {
+      const d = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      const yyyy = d.getFullYear();
+      const MM = pad(d.getMonth() + 1);
+      const dd = pad(d.getDate());
+      const hh = pad(d.getHours());
+      const mm = pad(d.getMinutes());
+      const ss = pad(d.getSeconds());
+      return `${yyyy}-${MM}-${dd}_${hh}${mm}${ss}`;
+    }
+
     // ----------------- Export Capabilities ----------------- //
     function exportMasterExcel() {
       if (typeof XLSX === 'undefined') {
@@ -1855,7 +1868,7 @@
       });
       XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(testRows), sanitizeExcelSheetName(nameC, 'Test Vehicles'));
 
-      const filename = `VIN_Comparison_Report_${new Date().toISOString().slice(0,10)}.xlsx`;
+      const filename = `VIN_Comparison_Report_${getExportTimestampString()}.xlsx`;
       XLSX.writeFile(wb, filename);
       showToast('Exported Master Excel Report');
     }
@@ -1871,14 +1884,14 @@
       state.listC.forEach(r => rows.push([nameC, r.vin, comparison.statusMapC.get(r.id) || '', r.note || '']));
 
       const csvContent = rows.map(r => r.map(f => `"${String(f).replace(/"/g, '""')}"`).join(',')).join('\r\n');
-      downloadFile(csvContent, `VIN_Comparison_Master_${new Date().toISOString().slice(0,10)}.csv`, 'text/csv;charset=utf-8;');
+      downloadFile(csvContent, `VIN_Comparison_Master_${getExportTimestampString()}.csv`, 'text/csv;charset=utf-8;');
       showToast('Exported Master CSV Report');
     }
 
     // ----------------- Backup & Restore JSON ----------------- //
     function backupWorkspaceJSON() {
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
-      const filename = `vin_workspace_backup_${new Date().toISOString().slice(0,10)}.json`;
+      const filename = `vin_workspace_backup_${getExportTimestampString()}.json`;
       const dlAnchor = document.createElement('a');
       dlAnchor.setAttribute("href", dataStr);
       dlAnchor.setAttribute("download", filename);

@@ -1,4 +1,4 @@
-# 🚗 VIN Tri-Panel Comparator & Test Vehicle Filter `v1.4.1`
+# 🚗 VIN Tri-Panel Comparator & Test Vehicle Filter `v1.4.2`
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-2ea44f?logo=github&style=flat-square)](https://cj-1981.github.io/vin-compare/)
 [![Deploy to GitHub Pages](https://github.com/CJ-1981/vin-compare/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/CJ-1981/vin-compare/actions/workflows/deploy-pages.yml)
@@ -44,15 +44,18 @@ A standalone, high-performance HTML/JS/CSS tool for comparing two lists of Vehic
    - Supports long vertical lists of VINs (newline, comma, semicolon, or tab-delimited with notes), plus drag-and-drop for `.xlsx`, `.xls`, `.csv`, `.txt`.
 8. **List Swap (A ⇄ B):**
    - Instant 1-click swap button (`⇄ Swap A & B`) in the header toolbar to exchange contents between List A and List B with real-time recalculation.
-9. **Inline Editable Notes:**
+9. **Inline Editable Notes with Enter-Blur:**
    - Dedicated Note column for every VIN across all 3 panels.
    - Edit notes directly in the table; changes are automatically persisted.
+   - Pressing **`Enter`** in any note field immediately blurs the input and removes active focus to complete the edit cleanly.
 10. **Local Offline Persistence:**
     - Automatic debounced synchronization to browser `localStorage`.
     - Full workspace JSON backup & restore.
-11. **Excel & CSV Export:**
-    - **Master Excel (.xlsx):** Multi-sheet workbook with Summary metrics, Matched Overlap, Only in List A, Only in List B, and Test Vehicles, using your custom list names.
-    - **Master CSV (.csv):** Consolidated export with all columns, statuses, and custom list names.
+11. **Timestamped Excel, CSV & JSON Export:**
+    - All export filenames automatically append a complete timestamp (`YYYY-MM-DD_HHmmss`) to ensure unique, non-overwriting, chronologically ordered files.
+    - **Master Excel (.xlsx):** Multi-sheet workbook (`VIN_Comparison_Report_YYYY-MM-DD_HHmmss.xlsx`) with Summary metrics, Matched Overlap, Only in List A, Only in List B, and Test Vehicles.
+    - **Master CSV (.csv):** Consolidated export (`VIN_Comparison_Master_YYYY-MM-DD_HHmmss.csv`) with all columns, statuses, and custom list names.
+    - **Workspace Backup (.json):** Full backup (`vin_workspace_backup_YYYY-MM-DD_HHmmss.json`).
 
 ---
 
