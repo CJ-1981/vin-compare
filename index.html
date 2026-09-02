@@ -516,20 +516,20 @@
     .badge-test { background: var(--badge-test-bg); color: var(--badge-test-text); }
     .badge-neutral { background: var(--bg-tertiary); color: var(--text-secondary); }
 
-    /* Modal */
+    /* Modal - Enlarged and spacious */
     .modal-overlay {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(2px);
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
       display: none;
       justify-content: center;
       align-items: center;
       z-index: 100;
-      padding: 20px;
+      padding: 24px;
     }
     .modal-overlay.active {
       display: flex;
@@ -538,82 +538,120 @@
     .modal-content {
       background: var(--bg-secondary);
       border: 1px solid var(--border-color);
-      border-radius: 12px;
-      width: 100%;
-      max-width: 620px;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+      border-radius: 14px;
+      width: 94%;
+      max-width: 900px;
+      height: 86vh;
+      max-height: 86vh;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
       display: flex;
       flex-direction: column;
-      max-height: 90vh;
       overflow: hidden;
     }
 
     .modal-header {
-      padding: 16px 20px;
+      padding: 16px 24px;
       border-bottom: 1px solid var(--border-color);
       display: flex;
       justify-content: space-between;
       align-items: center;
+      background: var(--bg-secondary);
     }
     .modal-title {
-      font-size: 1.1rem;
+      font-size: 1.15rem;
       font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     .close-btn {
       background: transparent;
       border: none;
       color: var(--text-muted);
-      font-size: 1.25rem;
+      font-size: 1.4rem;
       cursor: pointer;
+      line-height: 1;
+      padding: 4px;
+      border-radius: 4px;
+    }
+    .close-btn:hover {
+      color: var(--text-primary);
+      background: var(--bg-tertiary);
     }
 
     .modal-body {
-      padding: 20px;
+      padding: 20px 24px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 16px;
+      flex: 1;
     }
 
     .dropzone {
       border: 2px dashed var(--border-color);
-      border-radius: 8px;
-      padding: 20px;
+      border-radius: 10px;
+      padding: 18px 24px;
       text-align: center;
       color: var(--text-secondary);
       cursor: pointer;
       background: var(--bg-primary);
       transition: all 0.2s ease;
+      font-size: 0.85rem;
     }
     .dropzone:hover, .dropzone.dragover {
       border-color: var(--border-focus);
       color: var(--text-primary);
+      background: rgba(56, 189, 248, 0.05);
+    }
+
+    .textarea-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+      min-height: 280px;
     }
 
     .paste-area {
       width: 100%;
-      height: 160px;
+      flex: 1;
+      min-height: 280px;
       background: var(--bg-primary);
       border: 1px solid var(--border-color);
       border-radius: 8px;
-      padding: 10px;
+      padding: 14px;
       color: var(--text-primary);
       font-family: var(--font-mono);
-      font-size: 0.8rem;
-      resize: vertical;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      resize: none;
+      overflow-y: scroll;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border-color) var(--bg-primary);
+    }
+    .paste-area::-webkit-scrollbar {
+      width: 8px;
+    }
+    .paste-area::-webkit-scrollbar-thumb {
+      background-color: var(--border-color);
+      border-radius: 4px;
     }
     .paste-area:focus {
       outline: none;
       border-color: var(--border-focus);
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
     }
 
     .modal-footer {
-      padding: 12px 20px;
+      padding: 14px 24px;
       border-top: 1px solid var(--border-color);
       display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      background: var(--bg-primary);
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      background: var(--bg-secondary);
+      flex-wrap: wrap;
     }
 
     .toast {
@@ -716,8 +754,7 @@
             <span id="count-a" class="panel-count">0</span>
           </span>
           <div class="panel-toolbar">
-            <button class="btn btn-sm btn-primary" onclick="openImportModal('listA')">+ Import</button>
-            <button class="btn btn-sm" onclick="promptAddSingle('listA')">+ Add</button>
+            <button class="btn btn-sm btn-primary" onclick="openImportModal('listA')">+ Add / Import</button>
             <button class="btn btn-sm" onclick="copyPanelVins('listA')">📋 Copy</button>
             <button class="btn btn-sm btn-danger" onclick="clearList('listA')">Clear</button>
           </div>
@@ -774,8 +811,7 @@
             <span id="count-b" class="panel-count">0</span>
           </span>
           <div class="panel-toolbar">
-            <button class="btn btn-sm btn-primary" onclick="openImportModal('listB')">+ Import</button>
-            <button class="btn btn-sm" onclick="promptAddSingle('listB')">+ Add</button>
+            <button class="btn btn-sm btn-primary" onclick="openImportModal('listB')">+ Add / Import</button>
             <button class="btn btn-sm" onclick="copyPanelVins('listB')">📋 Copy</button>
             <button class="btn btn-sm btn-danger" onclick="clearList('listB')">Clear</button>
           </div>
@@ -832,8 +868,7 @@
             <span id="count-c" class="panel-count">0</span>
           </span>
           <div class="panel-toolbar">
-            <button class="btn btn-sm btn-primary" onclick="openImportModal('listC')">+ Import</button>
-            <button class="btn btn-sm" onclick="promptAddSingle('listC')">+ Add</button>
+            <button class="btn btn-sm btn-primary" onclick="openImportModal('listC')">+ Add / Import</button>
             <button class="btn btn-sm" onclick="copyPanelVins('listC')">📋 Copy</button>
             <button class="btn btn-sm btn-danger" onclick="clearList('listC')">Clear</button>
           </div>
@@ -884,11 +919,11 @@
     </section>
   </main>
 
-  <!-- Import Modal -->
+  <!-- Big Spacious Add / Import Modal -->
   <div id="batch-paste-modal" class="modal-overlay">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 id="modal-target-title" class="modal-title">Import VINs</h3>
+        <h3 id="modal-target-title" class="modal-title">📋 Add / Import VINs</h3>
         <button class="close-btn" onclick="closeImportModal()">&times;</button>
       </div>
       <div class="modal-body">
@@ -897,13 +932,20 @@
         </div>
         <input type="file" id="modal-file-input" accept=".xlsx,.xls,.csv,.txt" style="display:none" onchange="handleFileSelect(event)">
         
-        <div>
-          <label style="font-size:0.8rem; font-weight:600; color:var(--text-secondary); display:block; margin-bottom:6px;">
-            Or paste text below (Newlines, Tabs, or Commas. Supports multi-VIN comma lists or 2-column VIN + Note):
-          </label>
-          <textarea id="modal-paste-area" class="paste-area" placeholder="WBA1234567890ABCD, XYZ9876543210QWER&#10;or&#10;WBA1234567890ABCD    Optional Note Here"></textarea>
+        <div class="textarea-wrapper">
+          <div id="modal-live-counter" style="font-size:0.8rem; font-weight:600; color:var(--accent-blue); display:flex; justify-content:space-between; align-items:center;">
+            <span id="counter-stats">Lines: 0 | Valid VINs: 0</span>
+            <div style="display:flex; gap:8px;">
+              <button class="btn btn-sm" onclick="pasteFromClipboard()">📋 Paste Clipboard</button>
+              <button class="btn btn-sm btn-danger" onclick="clearPasteArea()">Clear</button>
+            </div>
+          </div>
+          <textarea id="modal-paste-area" class="paste-area" 
+            placeholder="Paste or type long list of VINs here (one per line, comma-separated, or with tabs for notes)...&#10;&#10;Examples:&#10;WBA1234567890ABCD&#10;XYZ9876543210QWER&#10;or&#10;WBA1234567890ABCD    Optional Note Here"
+            oninput="updateModalLiveCounter()"></textarea>
         </div>
-
+      </div>
+      <div class="modal-footer">
         <div style="display: flex; gap: 16px; align-items: center; font-size: 0.85rem;">
           <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
             <input type="radio" name="import-mode" value="append" checked> Append to existing list
@@ -912,10 +954,10 @@
             <input type="radio" name="import-mode" value="replace"> Replace entire list
           </label>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn" onclick="closeImportModal()">Cancel</button>
-        <button class="btn btn-primary" onclick="submitImport()">Import VINs</button>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn" onclick="closeImportModal()">Cancel</button>
+          <button class="btn btn-primary" onclick="submitImport()">Confirm & Add VINs</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1232,7 +1274,6 @@
 
       filterState[listKey] = selected;
 
-      // Update button label
       const total = checkboxes.length;
       const count = selected.size;
       const labelSpan = document.getElementById(labelId);
@@ -1286,14 +1327,12 @@
       const statusMap = listKey === 'listA' ? comparison.statusMapA : (listKey === 'listB' ? comparison.statusMapB : comparison.statusMapC);
       const activeStatuses = filterState[listKey];
 
-      // Attach original index for reliable order tracking
       let itemsWithIndex = list.map((item, originalIndex) => ({
         item,
         originalIndex,
         status: statusMap.get(item.id) || ''
       }));
 
-      // Filter by multi-select status and search text
       let filtered = itemsWithIndex.filter(({ item, status }) => {
         if (!activeStatuses.has(status)) return false;
         if (searchVal) {
@@ -1304,7 +1343,6 @@
         return true;
       });
 
-      // Apply Column Sorting if active
       const currentSort = sortState[listKey];
       if (currentSort.direction !== 'none') {
         const dir = currentSort.direction === 'asc' ? 1 : -1;
@@ -1389,38 +1427,6 @@
       }
     }
 
-    function promptAddSingle(listKey) {
-      const listName = state.listNames[listKey] || listKey.toUpperCase();
-      const vinInput = prompt(`Enter VIN(s) for "${listName}" (supports single VIN, comma/semicolon-separated, or multi-line):`);
-      if (!vinInput) return;
-      const parsed = parsePastedText(vinInput);
-      if (parsed.length === 0) return;
-      
-      if (parsed.length === 1) {
-        const item = parsed[0];
-        const note = prompt("Enter optional note for " + item.vin + ":", item.note || '') || '';
-        state[listKey].push({
-          id: Math.random().toString(36).substring(2, 9) + Date.now().toString(36),
-          vin: item.vin,
-          rawVin: item.vin,
-          note,
-          addedAt: Date.now()
-        });
-      } else {
-        for (const item of parsed) {
-          state[listKey].push({
-            id: Math.random().toString(36).substring(2, 9) + Date.now().toString(36),
-            vin: item.vin,
-            rawVin: item.vin,
-            note: item.note || '',
-            addedAt: Date.now()
-          });
-        }
-        showToast(`Added ${parsed.length} VINs to ${listName}`);
-      }
-      recalculateAndRender();
-    }
-
     function copyPanelVins(listKey) {
       const list = state[listKey] || [];
       if (list.length === 0) {
@@ -1432,18 +1438,46 @@
       showToast(`Copied ${list.length} items to clipboard`);
     }
 
-    // ----------------- Import Modal Logic ----------------- //
+    // ----------------- Enlarged Modal Logic ----------------- //
     function openImportModal(listKey) {
       currentModalTarget = listKey;
       const targetName = state.listNames[listKey] || listKey;
-      document.getElementById('modal-target-title').textContent = 'Import into ' + targetName;
+      document.getElementById('modal-target-title').textContent = '📋 Add / Import VINs into ' + targetName;
       document.getElementById('modal-paste-area').value = '';
       document.getElementById('modal-file-input').value = '';
+      updateModalLiveCounter();
       document.getElementById('batch-paste-modal').classList.add('active');
+      setTimeout(() => document.getElementById('modal-paste-area').focus(), 100);
     }
 
     function closeImportModal() {
       document.getElementById('batch-paste-modal').classList.remove('active');
+    }
+
+    function updateModalLiveCounter() {
+      const text = document.getElementById('modal-paste-area').value;
+      const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0).length;
+      const parsed = parsePastedText(text);
+      document.getElementById('counter-stats').textContent = `Lines: ${lines} | Valid VINs detected: ${parsed.length}`;
+    }
+
+    function clearPasteArea() {
+      document.getElementById('modal-paste-area').value = '';
+      updateModalLiveCounter();
+      document.getElementById('modal-paste-area').focus();
+    }
+
+    function pasteFromClipboard() {
+      navigator.clipboard.readText().then(clipText => {
+        if (clipText) {
+          const current = document.getElementById('modal-paste-area').value;
+          document.getElementById('modal-paste-area').value = current ? current + '\n' + clipText : clipText;
+          updateModalLiveCounter();
+          showToast('Pasted from clipboard');
+        }
+      }).catch(() => {
+        alert('Please paste manually using Ctrl+V or Cmd+V.');
+      });
     }
 
     function submitImport() {
@@ -1467,13 +1501,12 @@
       if (mode === 'replace') {
         state[currentModalTarget] = records;
       } else {
-        // Append mode (prevent direct exact duplicate ID collisions)
         state[currentModalTarget] = [...state[currentModalTarget], ...records];
       }
 
       closeImportModal();
       recalculateAndRender();
-      showToast(`Imported ${records.length} VINs into ${state.listNames[currentModalTarget] || currentModalTarget}`);
+      showToast(`Added ${records.length} VINs to ${state.listNames[currentModalTarget] || currentModalTarget}`);
     }
 
     // Drag and Drop & File Upload handling
@@ -1511,6 +1544,7 @@
               }
             }
             document.getElementById('modal-paste-area').value = textBuffer.join('\n');
+            updateModalLiveCounter();
             showToast(`Loaded ${textBuffer.length} rows from Excel`);
           } catch (err) {
             alert('Error parsing Excel spreadsheet: ' + err.message);
@@ -1520,6 +1554,7 @@
       } else {
         reader.onload = (e) => {
           document.getElementById('modal-paste-area').value = e.target.result;
+          updateModalLiveCounter();
           showToast(`Loaded file ${file.name}`);
         };
         reader.readAsText(file);

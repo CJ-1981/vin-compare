@@ -34,4 +34,8 @@ test('index.html exists and contains necessary panels, UI markers, and features'
   assert.match(html, /toggleFilterDropdown/);
   assert.match(html, /onFilterCheckboxChange/);
   assert.match(html, /multi-select-dropdown/);
+
+  // Big scrollable Add/Import modal with live counter
+  assert.match(html, /id="modal-live-counter"/);
+  assert.match(html, /updateModalLiveCounter/);
 });
