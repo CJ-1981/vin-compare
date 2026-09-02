@@ -43,4 +43,7 @@ test('index.html exists and contains necessary panels, UI markers, and features'
   // Dual badging and explicit filter checkbox for matched test vehicles
   assert.match(html, /MATCHED_TEST_VEHICLE/);
   assert.match(html, /value="MATCHED_TEST_VEHICLE"/);
+
+  // Dynamic filter dropdown options & header count badge update
+  assert.match(html, /updateFilterDropdownOptions/);
 });

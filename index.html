@@ -776,16 +776,16 @@
                 <a class="multi-select-action-link" onclick="setAllFilters('listA', false)">Clear</a>
               </div>
               <label class="multi-select-item">
-                <input type="checkbox" value="MATCHED" checked onchange="onFilterCheckboxChange('listA')"> Matched
+                <input type="checkbox" value="MATCHED" checked onchange="onFilterCheckboxChange('listA')"> <span class="filter-item-text">Matched</span>
               </label>
               <label class="multi-select-item">
-                <input type="checkbox" value="MATCHED_TEST_VEHICLE" checked onchange="onFilterCheckboxChange('listA')"> Matched (Test Car)
+                <input type="checkbox" value="MATCHED_TEST_VEHICLE" checked onchange="onFilterCheckboxChange('listA')"> <span class="filter-item-text">Matched (Test Car)</span>
               </label>
               <label class="multi-select-item">
-                <input type="checkbox" value="ONLY_IN_A" checked onchange="onFilterCheckboxChange('listA')"> Only Here
+                <input type="checkbox" value="ONLY_IN_A" checked onchange="onFilterCheckboxChange('listA')"> <span class="filter-item-text">Only Here</span>
               </label>
               <label class="multi-select-item">
-                <input type="checkbox" value="TEST_VEHICLE" checked onchange="onFilterCheckboxChange('listA')"> Test Vehicle (Ignored)
+                <input type="checkbox" value="TEST_VEHICLE" checked onchange="onFilterCheckboxChange('listA')"> <span class="filter-item-text">Test Vehicle (Ignored)</span>
               </label>
             </div>
           </div>
@@ -836,16 +836,16 @@
                 <a class="multi-select-action-link" onclick="setAllFilters('listB', false)">Clear</a>
               </div>
               <label class="multi-select-item">
-                <input type="checkbox" value="MATCHED" checked onchange="onFilterCheckboxChange('listB')"> Matched
+                <input type="checkbox" value="MATCHED" checked onchange="onFilterCheckboxChange('listB')"> <span class="filter-item-text">Matched</span>
               </label>
               <label class="multi-select-item">
-                <input type="checkbox" value="MATCHED_TEST_VEHICLE" checked onchange="onFilterCheckboxChange('listB')"> Matched (Test Car)
+                <input type="checkbox" value="MATCHED_TEST_VEHICLE" checked onchange="onFilterCheckboxChange('listB')"> <span class="filter-item-text">Matched (Test Car)</span>
               </label>
               <label class="multi-select-item">
-                <input type="checkbox" value="ONLY_IN_B" checked onchange="onFilterCheckboxChange('listB')"> Only Here
+                <input type="checkbox" value="ONLY_IN_B" checked onchange="onFilterCheckboxChange('listB')"> <span class="filter-item-text">Only Here</span>
               </label>
               <label class="multi-select-item">
-                <input type="checkbox" value="TEST_VEHICLE" checked onchange="onFilterCheckboxChange('listB')"> Test Vehicle (Ignored)
+                <input type="checkbox" value="TEST_VEHICLE" checked onchange="onFilterCheckboxChange('listB')"> <span class="filter-item-text">Test Vehicle (Ignored)</span>
               </label>
             </div>
           </div>
@@ -896,16 +896,16 @@
                 <a class="multi-select-action-link" onclick="setAllFilters('listC', false)">Clear</a>
               </div>
               <label class="multi-select-item">
-                <input type="checkbox" value="IN_A_AND_B" checked onchange="onFilterCheckboxChange('listC')"> Found in Both Lists
+                <input type="checkbox" value="IN_A_AND_B" checked onchange="onFilterCheckboxChange('listC')"> <span class="filter-item-text">Found in Both Lists</span>
               </label>
               <label class="multi-select-item">
-                <input type="checkbox" value="IN_A_ONLY" checked onchange="onFilterCheckboxChange('listC')"> Found in Left List Only
+                <input type="checkbox" value="IN_A_ONLY" checked onchange="onFilterCheckboxChange('listC')"> <span class="filter-item-text">Found in Left List Only</span>
               </label>
               <label class="multi-select-item">
-                <input type="checkbox" value="IN_B_ONLY" checked onchange="onFilterCheckboxChange('listC')"> Found in Mid List Only
+                <input type="checkbox" value="IN_B_ONLY" checked onchange="onFilterCheckboxChange('listC')"> <span class="filter-item-text">Found in Mid List Only</span>
               </label>
               <label class="multi-select-item">
-                <input type="checkbox" value="NOT_IN_A_OR_B" checked onchange="onFilterCheckboxChange('listC')"> Not Found in Lists
+                <input type="checkbox" value="NOT_IN_A_OR_B" checked onchange="onFilterCheckboxChange('listC')"> <span class="filter-item-text">Not Found in Lists</span>
               </label>
             </div>
           </div>
@@ -1256,10 +1256,6 @@
       document.getElementById('metric-matched').textContent = comparison.stats.matched;
       document.getElementById('metric-only-a').textContent = comparison.stats.onlyA;
       document.getElementById('metric-only-b').textContent = comparison.stats.onlyB;
-
-      document.getElementById('count-a').textContent = state.listA.length;
-      document.getElementById('count-b').textContent = state.listB.length;
-      document.getElementById('count-c').textContent = state.listC.length;
     }
 
     function swapListsAB() {
@@ -1328,9 +1324,71 @@
       }
     });
 
-    function onFilterCheckboxChange(listKey) {
+    const STATUS_BASE_LABELS = {
+      MATCHED: 'Matched',
+      MATCHED_TEST_VEHICLE: 'Matched (Test Car)',
+      ONLY_IN_A: 'Only Here',
+      ONLY_IN_B: 'Only Here',
+      TEST_VEHICLE: 'Test Vehicle (Ignored)',
+      IN_A_AND_B: 'Found in Both Lists',
+      IN_A_ONLY: 'Found in Left List Only',
+      IN_B_ONLY: 'Found in Mid List Only',
+      NOT_IN_A_OR_B: 'Not Found in Lists'
+    };
+
+    function updateFilterDropdownOptions(listKey) {
       const popoverId = listKey === 'listA' ? 'filter-popover-a' : (listKey === 'listB' ? 'filter-popover-b' : 'filter-popover-c');
       const labelId = listKey === 'listA' ? 'filter-label-a' : (listKey === 'listB' ? 'filter-label-b' : 'filter-label-c');
+      const popover = document.getElementById(popoverId);
+      if (!popover) return;
+
+      const list = state[listKey] || [];
+      const statusMap = listKey === 'listA' ? comparison.statusMapA : (listKey === 'listB' ? comparison.statusMapB : comparison.statusMapC);
+
+      const counts = {};
+      list.forEach(item => {
+        const s = statusMap.get(item.id);
+        if (s) counts[s] = (counts[s] || 0) + 1;
+      });
+
+      const items = popover.querySelectorAll('.multi-select-item');
+      let availableTotal = 0;
+      let availableChecked = 0;
+
+      items.forEach(itemEl => {
+        const cb = itemEl.querySelector('input[type="checkbox"]');
+        const textSpan = itemEl.querySelector('.filter-item-text');
+        if (!cb || !textSpan) return;
+
+        const val = cb.value;
+        const cnt = counts[val] || 0;
+        const base = STATUS_BASE_LABELS[val] || val;
+
+        textSpan.textContent = `${base} (${cnt})`;
+
+        if (cnt === 0) {
+          itemEl.style.display = 'none';
+        } else {
+          itemEl.style.display = 'flex';
+          availableTotal++;
+          if (cb.checked) availableChecked++;
+        }
+      });
+
+      const labelSpan = document.getElementById(labelId);
+      if (labelSpan) {
+        if (availableChecked === availableTotal || availableTotal === 0) {
+          labelSpan.textContent = 'Filters (All)';
+        } else if (availableChecked === 0) {
+          labelSpan.textContent = 'Filters (None)';
+        } else {
+          labelSpan.textContent = `Filters (${availableChecked}/${availableTotal})`;
+        }
+      }
+    }
+
+    function onFilterCheckboxChange(listKey) {
+      const popoverId = listKey === 'listA' ? 'filter-popover-a' : (listKey === 'listB' ? 'filter-popover-b' : 'filter-popover-c');
       const popover = document.getElementById(popoverId);
       const checkboxes = popover.querySelectorAll('input[type="checkbox"]');
 
@@ -1340,18 +1398,6 @@
       });
 
       filterState[listKey] = selected;
-
-      const total = checkboxes.length;
-      const count = selected.size;
-      const labelSpan = document.getElementById(labelId);
-      if (count === total) {
-        labelSpan.textContent = 'Filters (All)';
-      } else if (count === 0) {
-        labelSpan.textContent = 'Filters (None)';
-      } else {
-        labelSpan.textContent = `Filters (${count}/${total})`;
-      }
-
       renderPanel(listKey);
     }
 
@@ -1438,6 +1484,18 @@
       }
 
       updateSortHeaderUI(listKey);
+      updateFilterDropdownOptions(listKey);
+
+      // Update panel header count badge with filtered / total
+      const countBadgeId = listKey === 'listA' ? 'count-a' : (listKey === 'listB' ? 'count-b' : 'count-c');
+      const countBadge = document.getElementById(countBadgeId);
+      if (countBadge) {
+        if (filtered.length === list.length) {
+          countBadge.textContent = String(list.length);
+        } else {
+          countBadge.textContent = `${filtered.length} / ${list.length}`;
+        }
+      }
 
       if (filtered.length === 0) {
         if (activeStatuses.size === 0) {
