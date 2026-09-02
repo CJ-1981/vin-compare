@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VIN Tri-Panel Comparator & Test Vehicle Filter v1.3.0</title>
+  <title>VIN Tri-Panel Comparator & Test Vehicle Filter v1.4.0</title>
   <!-- Optional SheetJS for XLSX support with fallback -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
@@ -350,22 +350,34 @@
       gap: 8px;
     }
 
-    #panel-a { border-top: 4px solid var(--panel-a-border); }
-    #panel-b { border-top: 4px solid var(--panel-b-border); }
-    #panel-c { border-top: 4px solid var(--panel-c-border); }
-
     .panel-title-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 8px;
+      min-width: 0;
     }
 
     .panel-title {
       font-weight: 600;
-      font-size: 0.95rem;
+      font-size: clamp(0.78rem, 1.3vw, 0.95rem);
       display: flex;
       align-items: center;
       gap: 6px;
+      min-width: 0;
+      flex: 1 1 auto;
+      overflow: hidden;
+    }
+
+    .title-text {
+      cursor: pointer;
+      border-bottom: 1px dashed transparent;
+      transition: border-color 0.15s ease, font-size 0.15s ease;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: inline-block;
+      max-width: 100%;
     }
 
     .panel-count {
@@ -375,6 +387,8 @@
       background: var(--bg-tertiary);
       color: var(--text-secondary);
       font-family: var(--font-mono);
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
     .panel-toolbar {
@@ -684,7 +698,7 @@
     <div class="header-top">
       <div class="brand-title">
         <span>🚗 VIN Comparator</span>
-        <span class="version-badge">v1.3.0</span>
+        <span class="version-badge">v1.4.0</span>
         <span class="brand-badge">3-Panel Diff & Test Vehicles</span>
       </div>
       <div class="header-actions">
@@ -704,7 +718,7 @@
           📂 Restore
         </button>
         <input type="file" id="restore-file-input" accept=".json" style="display:none" onchange="restoreWorkspaceJSON(event)">
-        <button class="btn" onclick="loadDemoData()" title="Load realistic sample VIN data for demonstration">
+        <button id="sample-data-btn" class="btn" onclick="toggleSampleData()" title="Toggle realistic sample VIN data for demonstration">
           ✨ Sample Data
         </button>
         <button class="btn btn-danger" onclick="confirmClearAll()">
@@ -718,27 +732,27 @@
 
     <!-- Live Metrics Summary Bar -->
     <div id="metrics-summary">
-      <div class="metric-pill" style="border-left: 3px solid var(--panel-a-border);">
+      <div class="metric-pill">
         <span id="metric-label-a" class="metric-label">List A Total:</span>
         <span id="metric-a" class="metric-value">0</span>
       </div>
-      <div class="metric-pill" style="border-left: 3px solid var(--panel-b-border);">
+      <div class="metric-pill">
         <span id="metric-label-b" class="metric-label">List B Total:</span>
         <span id="metric-b" class="metric-value">0</span>
       </div>
-      <div class="metric-pill" style="border-left: 3px solid var(--accent-green);">
+      <div class="metric-pill">
         <span class="metric-label">✅ Matched Overlap:</span>
         <span id="metric-matched" class="metric-value">0</span>
       </div>
-      <div class="metric-pill" style="border-left: 3px solid var(--accent-amber);">
+      <div class="metric-pill">
         <span id="metric-label-only-a" class="metric-label">⚠️ Only in List A:</span>
         <span id="metric-only-a" class="metric-value">0</span>
       </div>
-      <div class="metric-pill" style="border-left: 3px solid var(--accent-amber);">
+      <div class="metric-pill">
         <span id="metric-label-only-b" class="metric-label">⚠️ Only in List B:</span>
         <span id="metric-only-b" class="metric-value">0</span>
       </div>
-      <div class="metric-pill" style="border-left: 3px solid var(--panel-c-border);">
+      <div class="metric-pill">
         <span id="metric-label-c" class="metric-label">🧪 Test Vehicles:</span>
         <span id="metric-c" class="metric-value">0</span>
       </div>
@@ -1144,6 +1158,48 @@
       }, 300);
     }
 
+    let isSampleDataActive = false;
+    let userWorkspaceBackup = null;
+
+    function toggleSampleData() {
+      const btn = document.getElementById('sample-data-btn');
+      if (!isSampleDataActive) {
+        userWorkspaceBackup = {
+          listA: JSON.parse(JSON.stringify(state.listA)),
+          listB: JSON.parse(JSON.stringify(state.listB)),
+          listC: JSON.parse(JSON.stringify(state.listC)),
+          listNames: { ...state.listNames },
+          sortState: JSON.parse(JSON.stringify(state.sortState))
+        };
+        loadDemoData();
+        isSampleDataActive = true;
+        if (btn) {
+          btn.classList.add('btn-primary');
+          btn.innerHTML = '✨ Hide Sample';
+          btn.title = 'Click to restore your entered data';
+        }
+        showToast('Sample data active — click again to restore your data');
+      } else {
+        if (userWorkspaceBackup) {
+          state.listA = userWorkspaceBackup.listA;
+          state.listB = userWorkspaceBackup.listB;
+          state.listC = userWorkspaceBackup.listC;
+          state.listNames = userWorkspaceBackup.listNames;
+          state.sortState = userWorkspaceBackup.sortState;
+          userWorkspaceBackup = null;
+        }
+        isSampleDataActive = false;
+        if (btn) {
+          btn.classList.remove('btn-primary');
+          btn.innerHTML = '✨ Sample Data';
+          btn.title = 'Toggle realistic sample VIN data for demonstration';
+        }
+        updateListTitles();
+        recalculateAndRender();
+        showToast('Restored your entered data');
+      }
+    }
+
     function loadDemoData() {
       state.listNames = {
         listA: 'Factory Inventory (A)',
@@ -1172,7 +1228,6 @@
       ];
       updateListTitles();
       recalculateAndRender();
-      showToast('Loaded sample demonstration data');
     }
 
     function loadState() {
@@ -1222,14 +1277,36 @@
       scheduleSave();
     }
 
+    function adjustTitleFontSize(el, text) {
+      if (!el) return;
+      const len = (text || '').length;
+      if (len > 32) {
+        el.style.fontSize = '0.76rem';
+      } else if (len > 24) {
+        el.style.fontSize = '0.82rem';
+      } else if (len > 18) {
+        el.style.fontSize = '0.88rem';
+      } else {
+        el.style.fontSize = '0.95rem';
+      }
+    }
+
     function updateListTitles() {
       const nameA = state.listNames.listA || DEFAULT_LIST_NAMES.listA;
       const nameB = state.listNames.listB || DEFAULT_LIST_NAMES.listB;
       const nameC = state.listNames.listC || DEFAULT_LIST_NAMES.listC;
 
-      document.getElementById('title-text-a').textContent = nameA;
-      document.getElementById('title-text-b').textContent = nameB;
-      document.getElementById('title-text-c').textContent = nameC;
+      const titleElA = document.getElementById('title-text-a');
+      const titleElB = document.getElementById('title-text-b');
+      const titleElC = document.getElementById('title-text-c');
+
+      titleElA.textContent = nameA;
+      titleElB.textContent = nameB;
+      titleElC.textContent = nameC;
+
+      adjustTitleFontSize(titleElA, nameA);
+      adjustTitleFontSize(titleElB, nameB);
+      adjustTitleFontSize(titleElC, nameC);
 
       document.getElementById('metric-label-a').textContent = nameA + ' Total:';
       document.getElementById('metric-label-b').textContent = nameB + ' Total:';
@@ -1630,6 +1707,16 @@
         state[currentModalTarget] = records;
       } else {
         state[currentModalTarget] = [...state[currentModalTarget], ...records];
+      }
+
+      if (isSampleDataActive) {
+        isSampleDataActive = false;
+        userWorkspaceBackup = null;
+        const btn = document.getElementById('sample-data-btn');
+        if (btn) {
+          btn.classList.remove('btn-primary');
+          btn.innerHTML = '✨ Sample Data';
+        }
       }
 
       closeImportModal();

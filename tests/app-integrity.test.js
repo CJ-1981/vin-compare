@@ -25,7 +25,7 @@ test('index.html exists and contains necessary panels, UI markers, and features'
   assert.match(html, /listNames/);
 
   // Version in title
-  assert.match(html, /v1\.3\.0/i);
+  assert.match(html, /v1\.4\.0/i);
 
   // Column sorting feature & persistence
   assert.match(html, /toggleSort/);
@@ -46,4 +46,14 @@ test('index.html exists and contains necessary panels, UI markers, and features'
 
   // Dynamic filter dropdown options & header count badge update
   assert.match(html, /updateFilterDropdownOptions/);
+
+  // Non-destructive Sample Data toggle
+  assert.match(html, /toggleSampleData/);
+  assert.match(html, /isSampleDataActive/);
+
+  // Dynamic title font size to prevent multi-line wrapping
+  assert.match(html, /adjustTitleFontSize/);
+
+  // No colored halo border-top on panels
+  assert.doesNotMatch(html, /#panel-a\s*\{\s*border-top:\s*4px/);
 });
