@@ -1,6 +1,6 @@
 {
   "name": "vin-compare-tool",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "3-Panel Standalone VIN Comparison & Test Vehicle Filtering Tool",
   "type": "module",
   "scripts": {

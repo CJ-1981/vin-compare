@@ -25,7 +25,7 @@ test('index.html exists and contains necessary panels, UI markers, and features'
   assert.match(html, /listNames/);
 
   // Version in title
-  assert.match(html, /v1\.1\.0/i);
+  assert.match(html, /v1\.2\.0/i);
 
   // Column sorting feature
   assert.match(html, /toggleSort/);
