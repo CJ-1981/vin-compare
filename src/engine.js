@@ -65,10 +65,16 @@ export function computeComparison(listA = [], listB = [], listC = []) {
   };
 
   for (const item of listA) {
-    if (setC.has(item.vin)) {
+    const inC = setC.has(item.vin);
+    const inB = setB.has(item.vin);
+
+    if (inC && inB) {
+      statusMapA.set(item.id, 'MATCHED_TEST_VEHICLE');
+      stats.testIgnoredInA++;
+    } else if (inC) {
       statusMapA.set(item.id, 'TEST_VEHICLE');
       stats.testIgnoredInA++;
-    } else if (setB.has(item.vin)) {
+    } else if (inB) {
       statusMapA.set(item.id, 'MATCHED');
       stats.matched++;
     } else {
@@ -78,10 +84,16 @@ export function computeComparison(listA = [], listB = [], listC = []) {
   }
 
   for (const item of listB) {
-    if (setC.has(item.vin)) {
+    const inC = setC.has(item.vin);
+    const inA = setA.has(item.vin);
+
+    if (inC && inA) {
+      statusMapB.set(item.id, 'MATCHED_TEST_VEHICLE');
+      stats.testIgnoredInB++;
+    } else if (inC) {
       statusMapB.set(item.id, 'TEST_VEHICLE');
       stats.testIgnoredInB++;
-    } else if (setA.has(item.vin)) {
+    } else if (inA) {
       statusMapB.set(item.id, 'MATCHED');
     } else {
       statusMapB.set(item.id, 'ONLY_IN_B');

@@ -33,34 +33,37 @@ test('parsePastedText parses comma and semicolon separated multiple VIN lists', 
   assert.deepEqual(parsedMixed.map(p => p.vin), ['VIN201', 'VIN202', 'VIN203', 'VIN204', 'VIN205', 'VIN206']);
 });
 
-test('computeComparison categorizes Matched, Only in A, Only in B, and Test Vehicles correctly', () => {
+test('computeComparison categorizes Matched, Only in A, Only in B, and dual MATCHED_TEST_VEHICLE correctly', () => {
   const listA = [
     { id: '1', vin: 'VIN_MATCH', note: '' },
     { id: '2', vin: 'VIN_ONLY_A', note: '' },
-    { id: '3', vin: 'VIN_TEST', note: 'Test car' }
+    { id: '3', vin: 'VIN_TEST_BOTH', note: 'In A, B and C' },
+    { id: '4', vin: 'VIN_TEST_ONLY_A', note: 'In A and C only' }
   ];
   const listB = [
-    { id: '4', vin: 'VIN_MATCH', note: '' },
-    { id: '5', vin: 'VIN_ONLY_B', note: '' },
-    { id: '6', vin: 'VIN_TEST', note: 'Test car' }
+    { id: '5', vin: 'VIN_MATCH', note: '' },
+    { id: '6', vin: 'VIN_ONLY_B', note: '' },
+    { id: '7', vin: 'VIN_TEST_BOTH', note: 'In A, B and C' }
   ];
   const listC = [
-    { id: '7', vin: 'VIN_TEST', note: 'Known test car' }
+    { id: '8', vin: 'VIN_TEST_BOTH', note: 'Known test car' },
+    { id: '9', vin: 'VIN_TEST_ONLY_A', note: 'Known test car' }
   ];
 
   const result = computeComparison(listA, listB, listC);
 
   assert.equal(result.statusMapA.get('1'), 'MATCHED');
   assert.equal(result.statusMapA.get('2'), 'ONLY_IN_A');
-  assert.equal(result.statusMapA.get('3'), 'TEST_VEHICLE');
+  assert.equal(result.statusMapA.get('3'), 'MATCHED_TEST_VEHICLE');
+  assert.equal(result.statusMapA.get('4'), 'TEST_VEHICLE');
 
-  assert.equal(result.statusMapB.get('4'), 'MATCHED');
-  assert.equal(result.statusMapB.get('5'), 'ONLY_IN_B');
-  assert.equal(result.statusMapB.get('6'), 'TEST_VEHICLE');
+  assert.equal(result.statusMapB.get('5'), 'MATCHED');
+  assert.equal(result.statusMapB.get('6'), 'ONLY_IN_B');
+  assert.equal(result.statusMapB.get('7'), 'MATCHED_TEST_VEHICLE');
 
   assert.equal(result.stats.matched, 1);
   assert.equal(result.stats.onlyA, 1);
   assert.equal(result.stats.onlyB, 1);
-  assert.equal(result.stats.testIgnoredInA, 1);
+  assert.equal(result.stats.testIgnoredInA, 2);
   assert.equal(result.stats.testIgnoredInB, 1);
 });

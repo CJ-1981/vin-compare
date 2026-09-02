@@ -984,6 +984,11 @@
       listB: [],
       listC: [],
       listNames: { ...DEFAULT_LIST_NAMES },
+      sortState: {
+        listA: { column: 'index', direction: 'none' }, // 'asc' | 'desc' | 'none'
+        listB: { column: 'index', direction: 'none' },
+        listC: { column: 'index', direction: 'none' }
+      },
       settings: {
         theme: 'dark',
         autoTrimUpper: true,
@@ -991,11 +996,7 @@
       }
     };
 
-    const sortState = {
-      listA: { column: 'index', direction: 'none' }, // 'asc' | 'desc' | 'none'
-      listB: { column: 'index', direction: 'none' },
-      listC: { column: 'index', direction: 'none' }
-    };
+    const sortState = state.sortState;
 
     const filterState = {
       listA: new Set(['MATCHED', 'ONLY_IN_A', 'TEST_VEHICLE']),
@@ -1076,10 +1077,16 @@
       };
 
       for (const item of listA) {
-        if (setC.has(item.vin)) {
+        const inC = setC.has(item.vin);
+        const inB = setB.has(item.vin);
+        if (inC && inB) {
+          statusMapA.set(item.id, 'MATCHED_TEST_VEHICLE');
+          stats.testIgnoredInA++;
+          stats.matched++;
+        } else if (inC) {
           statusMapA.set(item.id, 'TEST_VEHICLE');
           stats.testIgnoredInA++;
-        } else if (setB.has(item.vin)) {
+        } else if (inB) {
           statusMapA.set(item.id, 'MATCHED');
           stats.matched++;
         } else {
@@ -1089,10 +1096,15 @@
       }
 
       for (const item of listB) {
-        if (setC.has(item.vin)) {
+        const inC = setC.has(item.vin);
+        const inA = setA.has(item.vin);
+        if (inC && inA) {
+          statusMapB.set(item.id, 'MATCHED_TEST_VEHICLE');
+          stats.testIgnoredInB++;
+        } else if (inC) {
           statusMapB.set(item.id, 'TEST_VEHICLE');
           stats.testIgnoredInB++;
-        } else if (setA.has(item.vin)) {
+        } else if (inA) {
           statusMapB.set(item.id, 'MATCHED');
         } else {
           statusMapB.set(item.id, 'ONLY_IN_B');
@@ -1144,6 +1156,7 @@
         { id: 'b1', vin: 'WP0AB2A91NS298001', rawVin: 'WP0AB2A91NS298001', note: 'Munich assembly line final pass', addedAt: Date.now() },
         { id: 'b2', vin: 'WP0AB2A91NS298002', rawVin: 'WP0AB2A91NS298002', note: 'Quality inspection passed', addedAt: Date.now() },
         { id: 'b3', vin: 'WP0AB2A91NS298003', rawVin: 'WP0AB2A91NS298003', note: 'Software ECU v2.4 flashed', addedAt: Date.now() },
+        { id: 'b4', vin: 'WP0AB2A91NS298004', rawVin: 'WP0AB2A91NS298004', note: 'Prototype Gen-2 mule', addedAt: Date.now() },
         { id: 'b7', vin: 'WP0AB2A91NS298007', rawVin: 'WP0AB2A91NS298007', note: 'Arrived at dealer hub', addedAt: Date.now() },
         { id: 'b8', vin: 'WP0AB2A91NS298008', rawVin: 'WP0AB2A91NS298008', note: 'Transit customs cleared', addedAt: Date.now() }
       ];
@@ -1171,6 +1184,11 @@
               listB: parsed.listNames.listB || DEFAULT_LIST_NAMES.listB,
               listC: parsed.listNames.listC || DEFAULT_LIST_NAMES.listC
             };
+          }
+          if (parsed.sortState) {
+            state.sortState.listA = parsed.sortState.listA || { column: 'index', direction: 'none' };
+            state.sortState.listB = parsed.sortState.listB || { column: 'index', direction: 'none' };
+            state.sortState.listC = parsed.sortState.listC || { column: 'index', direction: 'none' };
           }
           if (parsed.settings) state.settings = { ...state.settings, ...parsed.settings };
         } else {
@@ -1257,6 +1275,8 @@
         current.column = column;
         current.direction = 'asc';
       }
+      state.sortState[listKey] = { ...current };
+      scheduleSave();
       renderPanel(listKey);
     }
 
@@ -1349,6 +1369,8 @@
         }
       }
       switch (status) {
+        case 'MATCHED_TEST_VEHICLE':
+          return '<span class="badge badge-matched">Matched</span> <span class="badge badge-test">Test Car</span>';
         case 'MATCHED': return '<span class="badge badge-matched">Matched</span>';
         case 'ONLY_IN_A': return '<span class="badge badge-diff">Only Here</span>';
         case 'ONLY_IN_B': return '<span class="badge badge-diff">Only Here</span>';
@@ -1375,7 +1397,16 @@
       }));
 
       let filtered = itemsWithIndex.filter(({ item, status }) => {
-        if (!activeStatuses.has(status)) return false;
+        let passesFilter = false;
+        if (activeStatuses.has(status)) {
+          passesFilter = true;
+        } else if (status === 'MATCHED_TEST_VEHICLE') {
+          if (activeStatuses.has('MATCHED') || activeStatuses.has('TEST_VEHICLE')) {
+            passesFilter = true;
+          }
+        }
+        if (!passesFilter) return false;
+
         if (searchVal) {
           const matchVin = item.vin.toLowerCase().includes(searchVal);
           const matchNote = (item.note || '').toLowerCase().includes(searchVal);
@@ -1639,8 +1670,11 @@
       // Matched Sheet
       const matchedRows = [['VIN', 'Source', 'Note']];
       state.listA.forEach(r => {
-        if (comparison.statusMapA.get(r.id) === 'MATCHED') {
+        const s = comparison.statusMapA.get(r.id);
+        if (s === 'MATCHED') {
           matchedRows.push([r.vin, `Matched in ${nameA} & ${nameB}`, r.note || '']);
+        } else if (s === 'MATCHED_TEST_VEHICLE') {
+          matchedRows.push([r.vin, `Matched in ${nameA} & ${nameB} (Test Vehicle)`, r.note || '']);
         }
       });
       XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(matchedRows), 'Matched Overlap');
@@ -1724,6 +1758,11 @@
                 listB: parsed.listNames.listB || DEFAULT_LIST_NAMES.listB,
                 listC: parsed.listNames.listC || DEFAULT_LIST_NAMES.listC
               };
+            }
+            if (parsed.sortState) {
+              state.sortState.listA = parsed.sortState.listA || { column: 'index', direction: 'none' };
+              state.sortState.listB = parsed.sortState.listB || { column: 'index', direction: 'none' };
+              state.sortState.listC = parsed.sortState.listC || { column: 'index', direction: 'none' };
             }
             if (parsed.settings) state.settings = parsed.settings;
             updateListTitles();

@@ -27,8 +27,9 @@ test('index.html exists and contains necessary panels, UI markers, and features'
   // Version in title
   assert.match(html, /v1\.2\.0/i);
 
-  // Column sorting feature
+  // Column sorting feature & persistence
   assert.match(html, /toggleSort/);
+  assert.match(html, /parsed\.sortState/);
 
   // Multi-select status filter feature
   assert.match(html, /toggleFilterDropdown/);
@@ -38,4 +39,7 @@ test('index.html exists and contains necessary panels, UI markers, and features'
   // Big scrollable Add/Import modal with live counter
   assert.match(html, /id="modal-live-counter"/);
   assert.match(html, /updateModalLiveCounter/);
+
+  // Dual badging for matched test vehicles
+  assert.match(html, /MATCHED_TEST_VEHICLE/);
 });

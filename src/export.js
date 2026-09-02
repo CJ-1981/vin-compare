@@ -31,15 +31,22 @@ export function generateMasterExportData(listA, listB, listC, comparison, listNa
 
   for (const item of listA) {
     const status = comparison.statusMapA.get(item.id);
-    if (status === 'MATCHED') matched.push({ vin: item.vin, source: `${nameA} & ${nameB}`, note: item.note });
-    else if (status === 'ONLY_IN_A') onlyA.push({ vin: item.vin, source: nameA, note: item.note });
-    else if (status === 'TEST_VEHICLE') testVehicles.push({ vin: item.vin, source: `Found in ${nameA} (Ignored)`, note: item.note });
+    if (status === 'MATCHED') {
+      matched.push({ vin: item.vin, source: `${nameA} & ${nameB}`, note: item.note });
+    } else if (status === 'MATCHED_TEST_VEHICLE') {
+      testVehicles.push({ vin: item.vin, source: `Found in both ${nameA} & ${nameB} (Matched Test Vehicle)`, note: item.note });
+    } else if (status === 'ONLY_IN_A') {
+      onlyA.push({ vin: item.vin, source: nameA, note: item.note });
+    } else if (status === 'TEST_VEHICLE') {
+      testVehicles.push({ vin: item.vin, source: `Found in ${nameA} (Ignored)`, note: item.note });
+    }
   }
 
   for (const item of listB) {
     const status = comparison.statusMapB.get(item.id);
-    if (status === 'ONLY_IN_B') onlyB.push({ vin: item.vin, source: nameB, note: item.note });
-    else if (status === 'TEST_VEHICLE' && !testVehicles.some(t => t.vin === item.vin)) {
+    if (status === 'ONLY_IN_B') {
+      onlyB.push({ vin: item.vin, source: nameB, note: item.note });
+    } else if ((status === 'TEST_VEHICLE' || status === 'MATCHED_TEST_VEHICLE') && !testVehicles.some(t => t.vin === item.vin)) {
       testVehicles.push({ vin: item.vin, source: `Found in ${nameB} (Ignored)`, note: item.note });
     }
   }
