@@ -1,4 +1,4 @@
-# 🚗 VIN Tri-Panel Comparator & Test Vehicle Filter `v1.4.0`
+# 🚗 VIN Tri-Panel Comparator & Test Vehicle Filter `v1.4.1`
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-2ea44f?logo=github&style=flat-square)](https://cj-1981.github.io/vin-compare/)
 [![Deploy to GitHub Pages](https://github.com/CJ-1981/vin-compare/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/CJ-1981/vin-compare/actions/workflows/deploy-pages.yml)
@@ -26,8 +26,9 @@ A standalone, high-performance HTML/JS/CSS tool for comparing two lists of Vehic
 3. **Non-Destructive Sample Data Toggle:**
    - Click **`✨ Sample Data`** to inspect realistic preloaded demonstration data without losing your current workspace.
    - Click **`✨ Hide Sample`** to immediately restore your previously entered data, custom titles, and sorting preferences.
-4. **Multi-Select Status Filter Dropdown with Dynamic Counts:**
+4. **Multi-Select Status Filter Dropdown with Dynamic Counts & Smart Placement:**
    - Popover dropdown filter in each panel allowing independent multi-selection of statuses: `Matched`, `Matched (Test Car)`, `Only Here`, and `Test Vehicle (Ignored)`.
+   - **Smart Inward Alignment:** Popovers are positioned right-aligned (`right: 0`), expanding inward to the left to prevent horizontal viewport overflow on the rightmost column (Panel C).
    - **Live Counts & Smart Availability:** Displays real-time matching counts per status (e.g. `Matched (3)`) and automatically hides statuses with 0 entries in that list.
    - **Dual Badging & Filtering:** Vehicles satisfying both conditions (found in A and B, plus listed in C) receive dual badges `[Matched] [Test Car]` and can be filtered or isolated with `Matched (Test Car)`.
    - Includes quick **"Select All"** and **"Clear"** buttons with live button labels reflecting selected count.

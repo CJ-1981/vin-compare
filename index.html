@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VIN Tri-Panel Comparator & Test Vehicle Filter v1.4.0</title>
+  <title>VIN Tri-Panel Comparator & Test Vehicle Filter v1.4.1</title>
   <!-- Optional SheetJS for XLSX support with fallback -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
@@ -237,13 +237,15 @@
     .multi-select-popover {
       position: absolute;
       top: calc(100% + 4px);
-      left: 0;
+      right: 0;
+      left: auto;
       background: var(--bg-secondary);
       border: 1px solid var(--border-color);
       border-radius: 8px;
       box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
       padding: 8px 10px;
       min-width: 190px;
+      max-width: min(280px, calc(100vw - 32px));
       z-index: 50;
       display: none;
       flex-direction: column;
@@ -698,7 +700,7 @@
     <div class="header-top">
       <div class="brand-title">
         <span>🚗 VIN Comparator</span>
-        <span class="version-badge">v1.4.0</span>
+        <span class="version-badge">v1.4.1</span>
         <span class="brand-badge">3-Panel Diff & Test Vehicles</span>
       </div>
       <div class="header-actions">

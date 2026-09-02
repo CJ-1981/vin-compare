@@ -25,7 +25,7 @@ test('index.html exists and contains necessary panels, UI markers, and features'
   assert.match(html, /listNames/);
 
   // Version in title
-  assert.match(html, /v1\.4\.0/i);
+  assert.match(html, /v1\.4\.1/i);
 
   // Column sorting feature & persistence
   assert.match(html, /toggleSort/);
@@ -56,4 +56,7 @@ test('index.html exists and contains necessary panels, UI markers, and features'
 
   // No colored halo border-top on panels
   assert.doesNotMatch(html, /#panel-a\s*\{\s*border-top:\s*4px/);
+
+  // Popover right alignment to prevent overflow past right edge
+  assert.match(html, /\.multi-select-popover\s*\{[^}]*right:\s*0/);
 });
