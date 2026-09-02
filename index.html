@@ -704,6 +704,9 @@
           📂 Restore
         </button>
         <input type="file" id="restore-file-input" accept=".json" style="display:none" onchange="restoreWorkspaceJSON(event)">
+        <button class="btn" onclick="loadDemoData()" title="Load realistic sample VIN data for demonstration">
+          ✨ Sample Data
+        </button>
         <button class="btn btn-danger" onclick="confirmClearAll()">
           🗑️ Clear All
         </button>
@@ -1123,7 +1126,38 @@
       }, 300);
     }
 
+    function loadDemoData() {
+      state.listNames = {
+        listA: 'Factory Inventory (A)',
+        listB: 'Port Delivery (B)',
+        listC: 'Mule Prototypes (C)'
+      };
+      state.listA = [
+        { id: 'a1', vin: 'WP0AB2A91NS298001', rawVin: 'WP0AB2A91NS298001', note: 'Munich assembly line final pass', addedAt: Date.now() },
+        { id: 'a2', vin: 'WP0AB2A91NS298002', rawVin: 'WP0AB2A91NS298002', note: 'Quality inspection passed', addedAt: Date.now() },
+        { id: 'a3', vin: 'WP0AB2A91NS298003', rawVin: 'WP0AB2A91NS298003', note: 'Software ECU v2.4 flashed', addedAt: Date.now() },
+        { id: 'a4', vin: 'WP0AB2A91NS298004', rawVin: 'WP0AB2A91NS298004', note: 'Prototype Gen-2 mule', addedAt: Date.now() },
+        { id: 'a5', vin: 'WP0AB2A91NS298005', rawVin: 'WP0AB2A91NS298005', note: 'Battery pack replaced', addedAt: Date.now() },
+        { id: 'a6', vin: 'WP0AB2A91NS298006', rawVin: 'WP0AB2A91NS298006', note: 'Awaiting shipping manifest', addedAt: Date.now() }
+      ];
+      state.listB = [
+        { id: 'b1', vin: 'WP0AB2A91NS298001', rawVin: 'WP0AB2A91NS298001', note: 'Munich assembly line final pass', addedAt: Date.now() },
+        { id: 'b2', vin: 'WP0AB2A91NS298002', rawVin: 'WP0AB2A91NS298002', note: 'Quality inspection passed', addedAt: Date.now() },
+        { id: 'b3', vin: 'WP0AB2A91NS298003', rawVin: 'WP0AB2A91NS298003', note: 'Software ECU v2.4 flashed', addedAt: Date.now() },
+        { id: 'b7', vin: 'WP0AB2A91NS298007', rawVin: 'WP0AB2A91NS298007', note: 'Arrived at dealer hub', addedAt: Date.now() },
+        { id: 'b8', vin: 'WP0AB2A91NS298008', rawVin: 'WP0AB2A91NS298008', note: 'Transit customs cleared', addedAt: Date.now() }
+      ];
+      state.listC = [
+        { id: 'c1', vin: 'WP0AB2A91NS298004', rawVin: 'WP0AB2A91NS298004', note: 'Pre-production test car (ignored from diff)', addedAt: Date.now() },
+        { id: 'c2', vin: 'WP0AB2A91NS298009', rawVin: 'WP0AB2A91NS298009', note: 'Wind tunnel acoustic testing', addedAt: Date.now() }
+      ];
+      updateListTitles();
+      recalculateAndRender();
+      showToast('Loaded sample demonstration data');
+    }
+
     function loadState() {
+      let isFresh = false;
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
@@ -1139,13 +1173,20 @@
             };
           }
           if (parsed.settings) state.settings = { ...state.settings, ...parsed.settings };
+        } else {
+          isFresh = true;
         }
       } catch (e) {
         console.error('Failed to load state', e);
       }
       applyTheme(state.settings.theme);
       updateListTitles();
-      recalculateAndRender();
+
+      if (window.location.search.includes('demo') || (isFresh && state.listA.length === 0 && state.listB.length === 0 && state.listC.length === 0)) {
+        loadDemoData();
+      } else {
+        recalculateAndRender();
+      }
     }
 
     function recalculateAndRender() {

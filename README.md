@@ -2,6 +2,8 @@
 
 A standalone, high-performance HTML/JS/CSS tool for comparing two lists of Vehicle Identification Numbers (VINs) while ignoring/flagging known test vehicles.
 
+![VIN Tri-Panel Comparator Screenshot](docs/assets/screenshot.png)
+
 ---
 
 ## 🌟 Key Features
