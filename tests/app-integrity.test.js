@@ -29,4 +29,9 @@ test('index.html exists and contains necessary panels, UI markers, and features'
 
   // Column sorting feature
   assert.match(html, /toggleSort/);
+
+  // Multi-select status filter feature
+  assert.match(html, /toggleFilterDropdown/);
+  assert.match(html, /onFilterCheckboxChange/);
+  assert.match(html, /multi-select-dropdown/);
 });

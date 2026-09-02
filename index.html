@@ -211,6 +211,76 @@
       color: var(--accent-blue);
     }
 
+    /* Multi-select Dropdown */
+    .multi-select-dropdown {
+      position: relative;
+      display: inline-block;
+    }
+    .multi-select-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      font-weight: 500;
+      transition: border-color 0.15s ease;
+      white-space: nowrap;
+    }
+    .multi-select-btn:hover {
+      border-color: var(--border-focus);
+    }
+    .multi-select-popover {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+      padding: 8px 10px;
+      min-width: 190px;
+      z-index: 50;
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .multi-select-popover.show {
+      display: flex;
+    }
+    .multi-select-actions {
+      display: flex;
+      justify-content: space-between;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.7rem;
+    }
+    .multi-select-action-link {
+      color: var(--accent-blue);
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .multi-select-action-link:hover {
+      text-decoration: underline;
+    }
+    .multi-select-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      user-select: none;
+      padding: 2px 0;
+    }
+    .multi-select-item input[type="checkbox"] {
+      cursor: pointer;
+      accent-color: var(--accent-blue);
+    }
+
     /* Metrics Summary Bar */
     #metrics-summary {
       display: flex;
@@ -331,16 +401,6 @@
     .search-input:focus {
       outline: none;
       border-color: var(--border-focus);
-    }
-
-    .filter-select {
-      background: var(--bg-primary);
-      border: 1px solid var(--border-color);
-      color: var(--text-primary);
-      padding: 5px 8px;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      cursor: pointer;
     }
 
     /* Table Container */
@@ -664,12 +724,28 @@
         </div>
         <div class="panel-filter-search">
           <input type="text" id="search-a" class="search-input" placeholder="Search VIN or Note..." oninput="renderPanel('listA')">
-          <select id="filter-a" class="filter-select" onchange="renderPanel('listA')">
-            <option value="ALL">All Statuses</option>
-            <option value="MATCHED">Matched</option>
-            <option value="ONLY_IN_A">Only Here</option>
-            <option value="TEST_VEHICLE">Test Vehicle (Ignored)</option>
-          </select>
+          
+          <!-- Multi-Select Dropdown Filter A -->
+          <div class="multi-select-dropdown" id="dropdown-wrapper-a">
+            <button class="multi-select-btn" id="filter-btn-a" onclick="toggleFilterDropdown('listA', event)">
+              <span id="filter-label-a">Filters (All)</span> <span style="font-size:0.65rem;">▼</span>
+            </button>
+            <div class="multi-select-popover" id="filter-popover-a">
+              <div class="multi-select-actions">
+                <a class="multi-select-action-link" onclick="setAllFilters('listA', true)">Select All</a>
+                <a class="multi-select-action-link" onclick="setAllFilters('listA', false)">Clear</a>
+              </div>
+              <label class="multi-select-item">
+                <input type="checkbox" value="MATCHED" checked onchange="onFilterCheckboxChange('listA')"> Matched
+              </label>
+              <label class="multi-select-item">
+                <input type="checkbox" value="ONLY_IN_A" checked onchange="onFilterCheckboxChange('listA')"> Only Here
+              </label>
+              <label class="multi-select-item">
+                <input type="checkbox" value="TEST_VEHICLE" checked onchange="onFilterCheckboxChange('listA')"> Test Vehicle (Ignored)
+              </label>
+            </div>
+          </div>
         </div>
       </div>
       <div class="table-container">
@@ -706,12 +782,28 @@
         </div>
         <div class="panel-filter-search">
           <input type="text" id="search-b" class="search-input" placeholder="Search VIN or Note..." oninput="renderPanel('listB')">
-          <select id="filter-b" class="filter-select" onchange="renderPanel('listB')">
-            <option value="ALL">All Statuses</option>
-            <option value="MATCHED">Matched</option>
-            <option value="ONLY_IN_B">Only Here</option>
-            <option value="TEST_VEHICLE">Test Vehicle (Ignored)</option>
-          </select>
+          
+          <!-- Multi-Select Dropdown Filter B -->
+          <div class="multi-select-dropdown" id="dropdown-wrapper-b">
+            <button class="multi-select-btn" id="filter-btn-b" onclick="toggleFilterDropdown('listB', event)">
+              <span id="filter-label-b">Filters (All)</span> <span style="font-size:0.65rem;">▼</span>
+            </button>
+            <div class="multi-select-popover" id="filter-popover-b">
+              <div class="multi-select-actions">
+                <a class="multi-select-action-link" onclick="setAllFilters('listB', true)">Select All</a>
+                <a class="multi-select-action-link" onclick="setAllFilters('listB', false)">Clear</a>
+              </div>
+              <label class="multi-select-item">
+                <input type="checkbox" value="MATCHED" checked onchange="onFilterCheckboxChange('listB')"> Matched
+              </label>
+              <label class="multi-select-item">
+                <input type="checkbox" value="ONLY_IN_B" checked onchange="onFilterCheckboxChange('listB')"> Only Here
+              </label>
+              <label class="multi-select-item">
+                <input type="checkbox" value="TEST_VEHICLE" checked onchange="onFilterCheckboxChange('listB')"> Test Vehicle (Ignored)
+              </label>
+            </div>
+          </div>
         </div>
       </div>
       <div class="table-container">
@@ -748,13 +840,31 @@
         </div>
         <div class="panel-filter-search">
           <input type="text" id="search-c" class="search-input" placeholder="Search VIN or Note..." oninput="renderPanel('listC')">
-          <select id="filter-c" class="filter-select" onchange="renderPanel('listC')">
-            <option value="ALL">All Reference Items</option>
-            <option value="IN_A_AND_B">Found in Both Lists</option>
-            <option value="IN_A_ONLY">Found in Left List Only</option>
-            <option value="IN_B_ONLY">Found in Mid List Only</option>
-            <option value="NOT_IN_A_OR_B">Not Found in Lists</option>
-          </select>
+          
+          <!-- Multi-Select Dropdown Filter C -->
+          <div class="multi-select-dropdown" id="dropdown-wrapper-c">
+            <button class="multi-select-btn" id="filter-btn-c" onclick="toggleFilterDropdown('listC', event)">
+              <span id="filter-label-c">Filters (All)</span> <span style="font-size:0.65rem;">▼</span>
+            </button>
+            <div class="multi-select-popover" id="filter-popover-c">
+              <div class="multi-select-actions">
+                <a class="multi-select-action-link" onclick="setAllFilters('listC', true)">Select All</a>
+                <a class="multi-select-action-link" onclick="setAllFilters('listC', false)">Clear</a>
+              </div>
+              <label class="multi-select-item">
+                <input type="checkbox" value="IN_A_AND_B" checked onchange="onFilterCheckboxChange('listC')"> Found in Both Lists
+              </label>
+              <label class="multi-select-item">
+                <input type="checkbox" value="IN_A_ONLY" checked onchange="onFilterCheckboxChange('listC')"> Found in Left List Only
+              </label>
+              <label class="multi-select-item">
+                <input type="checkbox" value="IN_B_ONLY" checked onchange="onFilterCheckboxChange('listC')"> Found in Mid List Only
+              </label>
+              <label class="multi-select-item">
+                <input type="checkbox" value="NOT_IN_A_OR_B" checked onchange="onFilterCheckboxChange('listC')"> Not Found in Lists
+              </label>
+            </div>
+          </div>
         </div>
       </div>
       <div class="table-container">
@@ -840,6 +950,12 @@
       listA: { column: 'index', direction: 'none' }, // 'asc' | 'desc' | 'none'
       listB: { column: 'index', direction: 'none' },
       listC: { column: 'index', direction: 'none' }
+    };
+
+    const filterState = {
+      listA: new Set(['MATCHED', 'ONLY_IN_A', 'TEST_VEHICLE']),
+      listB: new Set(['MATCHED', 'ONLY_IN_B', 'TEST_VEHICLE']),
+      listC: new Set(['IN_A_AND_B', 'IN_A_ONLY', 'IN_B_ONLY', 'NOT_IN_A_OR_B'])
     };
 
     let comparison = {
@@ -1080,6 +1196,67 @@
       });
     }
 
+    // ----------------- Multi-Select Filter Engine ----------------- //
+    function toggleFilterDropdown(listKey, event) {
+      event.stopPropagation();
+      const popoverId = listKey === 'listA' ? 'filter-popover-a' : (listKey === 'listB' ? 'filter-popover-b' : 'filter-popover-c');
+      const popover = document.getElementById(popoverId);
+      const isVisible = popover.classList.contains('show');
+
+      closeAllFilterDropdowns();
+      if (!isVisible) {
+        popover.classList.add('show');
+      }
+    }
+
+    function closeAllFilterDropdowns() {
+      document.querySelectorAll('.multi-select-popover').forEach(el => el.classList.remove('show'));
+    }
+
+    window.addEventListener('click', (e) => {
+      if (!e.target.closest('.multi-select-dropdown')) {
+        closeAllFilterDropdowns();
+      }
+    });
+
+    function onFilterCheckboxChange(listKey) {
+      const popoverId = listKey === 'listA' ? 'filter-popover-a' : (listKey === 'listB' ? 'filter-popover-b' : 'filter-popover-c');
+      const labelId = listKey === 'listA' ? 'filter-label-a' : (listKey === 'listB' ? 'filter-label-b' : 'filter-label-c');
+      const popover = document.getElementById(popoverId);
+      const checkboxes = popover.querySelectorAll('input[type="checkbox"]');
+
+      const selected = new Set();
+      checkboxes.forEach(cb => {
+        if (cb.checked) selected.add(cb.value);
+      });
+
+      filterState[listKey] = selected;
+
+      // Update button label
+      const total = checkboxes.length;
+      const count = selected.size;
+      const labelSpan = document.getElementById(labelId);
+      if (count === total) {
+        labelSpan.textContent = 'Filters (All)';
+      } else if (count === 0) {
+        labelSpan.textContent = 'Filters (None)';
+      } else {
+        labelSpan.textContent = `Filters (${count}/${total})`;
+      }
+
+      renderPanel(listKey);
+    }
+
+    function setAllFilters(listKey, selectAll) {
+      const popoverId = listKey === 'listA' ? 'filter-popover-a' : (listKey === 'listB' ? 'filter-popover-b' : 'filter-popover-c');
+      const popover = document.getElementById(popoverId);
+      const checkboxes = popover.querySelectorAll('input[type="checkbox"]');
+      checkboxes.forEach(cb => {
+        cb.checked = selectAll;
+      });
+      onFilterCheckboxChange(listKey);
+    }
+
     function getBadgeHTML(status, listKey) {
       if (listKey === 'listC') {
         switch(status) {
@@ -1101,14 +1278,13 @@
     function renderPanel(listKey) {
       const tbodyId = listKey === 'listA' ? 'tbody-a' : (listKey === 'listB' ? 'tbody-b' : 'tbody-c');
       const searchId = listKey === 'listA' ? 'search-a' : (listKey === 'listB' ? 'search-b' : 'search-c');
-      const filterId = listKey === 'listA' ? 'filter-a' : (listKey === 'listB' ? 'filter-b' : 'filter-c');
       
       const tbody = document.getElementById(tbodyId);
       const searchVal = (document.getElementById(searchId).value || '').toLowerCase().trim();
-      const filterVal = document.getElementById(filterId).value;
 
       const list = state[listKey] || [];
       const statusMap = listKey === 'listA' ? comparison.statusMapA : (listKey === 'listB' ? comparison.statusMapB : comparison.statusMapC);
+      const activeStatuses = filterState[listKey];
 
       // Attach original index for reliable order tracking
       let itemsWithIndex = list.map((item, originalIndex) => ({
@@ -1117,9 +1293,9 @@
         status: statusMap.get(item.id) || ''
       }));
 
-      // Filter by status and search text
+      // Filter by multi-select status and search text
       let filtered = itemsWithIndex.filter(({ item, status }) => {
-        if (filterVal !== 'ALL' && status !== filterVal) return false;
+        if (!activeStatuses.has(status)) return false;
         if (searchVal) {
           const matchVin = item.vin.toLowerCase().includes(searchVal);
           const matchNote = (item.note || '').toLowerCase().includes(searchVal);
@@ -1156,7 +1332,11 @@
       updateSortHeaderUI(listKey);
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 24px; color: var(--text-muted);">No records to display</td></tr>`;
+        if (activeStatuses.size === 0) {
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 24px; color: var(--text-muted);">No statuses selected. Use the filter dropdown to select at least one status.</td></tr>`;
+        } else {
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 24px; color: var(--text-muted);">No records match the current filter</td></tr>`;
+        }
         return;
       }
 
