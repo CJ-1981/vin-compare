@@ -23,4 +23,10 @@ test('index.html exists and contains necessary panels, UI markers, and features'
   assert.match(html, /Swap A & B/i);
   assert.match(html, /renameList/);
   assert.match(html, /listNames/);
+
+  // Version in title
+  assert.match(html, /v1\.1\.0/i);
+
+  // Column sorting feature
+  assert.match(html, /toggleSort/);
 });

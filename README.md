@@ -1,4 +1,4 @@
-# 🚗 VIN Tri-Panel Comparator & Test Vehicle Filter
+# 🚗 VIN Tri-Panel Comparator & Test Vehicle Filter `v1.1.0`
 
 A standalone, high-performance HTML/JS/CSS tool for comparing two lists of Vehicle Identification Numbers (VINs) while ignoring/flagging known test vehicles.
 
@@ -10,24 +10,33 @@ A standalone, high-performance HTML/JS/CSS tool for comparing two lists of Vehic
    - **List A (Baseline):** Primary source VIN list.
    - **List B (Comparison):** Target comparison VIN list.
    - **List C (Test Vehicles):** Known test vehicles to flag and exclude from discrepancy counts.
-2. **Inline Editable Notes:**
+2. **List Renaming:**
+   - Click any panel header title or the `✏️` edit button to rename `List A`, `List B`, or `List C` to custom labels (e.g., `Factory Inventory`, `Port Delivery`, `Mule Prototypes`).
+   - Custom names dynamically propagate across live metrics counters, import dialogs, Master Excel sheets/metrics, and CSV exports.
+3. **Interactive Column Sorting:**
+   - Click any column header (`#`, `VIN`, `Status`/`Detected In`, `Note`) to cycle between **Ascending (`▲`)**, **Descending (`▼`)**, and **Default Index Order**.
+   - Sort state is maintained independently per panel.
+4. **List Swap (A ⇄ B):**
+   - Instant 1-click swap button (`⇄ Swap A & B`) in the header toolbar to exchange contents between List A and List B with real-time recalculation.
+5. **Inline Editable Notes:**
    - Dedicated Note column for every VIN across all 3 panels.
    - Edit notes directly in the table; changes are automatically persisted.
-3. **Local Offline Persistence:**
+6. **Local Offline Persistence:**
    - Automatic debounced synchronization to browser `localStorage`.
    - Full workspace JSON backup & restore.
-4. **Smart Data Ingestion:**
-   - Direct copy-paste supporting newlines, tabs, commas, and semicolons.
+7. **Smart Multi-Format Data Ingestion:**
+   - Direct copy-paste supporting newlines, commas, semicolons, and tabs.
+   - Multi-VIN entry: accepts lists separated by commas (e.g. `VIN1, VIN2, VIN3`) or newlines.
    - 2-Column paste auto-detection: pastes `VIN <tab> Note` directly into columns.
    - Drag-and-drop & file upload support for `.xlsx`, `.xls`, `.csv`, `.txt`.
-   - Single VIN manual add with instant normalization.
-5. **Real-time Status Badges & Metrics Bar:**
+   - Single/batch manual add prompt with instant normalization.
+8. **Real-time Status Badges & Metrics Bar:**
    - Live metrics: Total in A & B, Matched ($A \cap B$), Discrepancies (Only in A, Only in B), and Test Vehicles Ignored.
    - Per-panel search (filters both VIN and Note) and status dropdown filters.
    - Quick 1-click VIN copy button.
-6. **Excel & CSV Export:**
-   - **Master Excel (.xlsx):** Multi-sheet workbook with Summary metrics, Matched, Only in A, Only in B, and Test Vehicles.
-   - **Master CSV (.csv):** Consolidated export with all columns and statuses.
+9. **Excel & CSV Export:**
+   - **Master Excel (.xlsx):** Multi-sheet workbook with Summary metrics, Matched Overlap, Only in List A, Only in List B, and Test Vehicles, using your custom list names.
+   - **Master CSV (.csv):** Consolidated export with all columns, statuses, and custom list names.
 
 ---
 

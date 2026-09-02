@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VIN Tri-Panel Comparator & Test Vehicle Filter</title>
+  <title>VIN Tri-Panel Comparator & Test Vehicle Filter v1.1.0</title>
   <!-- Optional SheetJS for XLSX support with fallback -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
@@ -100,7 +100,7 @@
     .brand-title {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       font-size: 1.25rem;
       font-weight: 700;
       letter-spacing: -0.025em;
@@ -114,6 +114,17 @@
       background: var(--bg-tertiary);
       color: var(--accent-blue);
       border: 1px solid var(--border-color);
+    }
+
+    .version-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 9999px;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent-blue);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      font-family: var(--font-mono);
     }
 
     .header-actions {
@@ -357,6 +368,30 @@
       z-index: 10;
     }
 
+    th.sortable {
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+    th.sortable:hover {
+      background-color: rgba(255, 255, 255, 0.08);
+      color: var(--text-primary);
+    }
+    th.sort-active {
+      color: var(--accent-blue);
+    }
+
+    .sort-icon {
+      display: inline-block;
+      margin-left: 4px;
+      font-size: 0.7rem;
+      opacity: 0.6;
+    }
+    th.sort-active .sort-icon {
+      opacity: 1;
+      color: var(--accent-blue);
+    }
+
     td {
       padding: 6px 10px;
       border-bottom: 1px solid var(--border-color);
@@ -551,6 +586,7 @@
     <div class="header-top">
       <div class="brand-title">
         <span>🚗 VIN Comparator</span>
+        <span class="version-badge">v1.1.0</span>
         <span class="brand-badge">3-Panel Diff & Test Vehicles</span>
       </div>
       <div class="header-actions">
@@ -640,10 +676,10 @@
         <table>
           <thead>
             <tr>
-              <th style="width: 36px;">#</th>
-              <th>VIN</th>
-              <th style="width: 100px;">Status</th>
-              <th>Note (Editable)</th>
+              <th id="th-a-index" class="sortable" style="width: 44px;" onclick="toggleSort('listA', 'index')"># <span class="sort-icon">↕</span></th>
+              <th id="th-a-vin" class="sortable" onclick="toggleSort('listA', 'vin')">VIN <span class="sort-icon">↕</span></th>
+              <th id="th-a-status" class="sortable" style="width: 100px;" onclick="toggleSort('listA', 'status')">Status <span class="sort-icon">↕</span></th>
+              <th id="th-a-note" class="sortable" onclick="toggleSort('listA', 'note')">Note (Editable) <span class="sort-icon">↕</span></th>
               <th style="width: 32px;"></th>
             </tr>
           </thead>
@@ -682,10 +718,10 @@
         <table>
           <thead>
             <tr>
-              <th style="width: 36px;">#</th>
-              <th>VIN</th>
-              <th style="width: 100px;">Status</th>
-              <th>Note (Editable)</th>
+              <th id="th-b-index" class="sortable" style="width: 44px;" onclick="toggleSort('listB', 'index')"># <span class="sort-icon">↕</span></th>
+              <th id="th-b-vin" class="sortable" onclick="toggleSort('listB', 'vin')">VIN <span class="sort-icon">↕</span></th>
+              <th id="th-b-status" class="sortable" style="width: 100px;" onclick="toggleSort('listB', 'status')">Status <span class="sort-icon">↕</span></th>
+              <th id="th-b-note" class="sortable" onclick="toggleSort('listB', 'note')">Note (Editable) <span class="sort-icon">↕</span></th>
               <th style="width: 32px;"></th>
             </tr>
           </thead>
@@ -714,10 +750,10 @@
           <input type="text" id="search-c" class="search-input" placeholder="Search VIN or Note..." oninput="renderPanel('listC')">
           <select id="filter-c" class="filter-select" onchange="renderPanel('listC')">
             <option value="ALL">All Reference Items</option>
-            <option value="IN_A_AND_B">Found in Both A & B</option>
-            <option value="IN_A_ONLY">Found in A Only</option>
-            <option value="IN_B_ONLY">Found in B Only</option>
-            <option value="NOT_IN_A_OR_B">Not Found in A/B</option>
+            <option value="IN_A_AND_B">Found in Both Lists</option>
+            <option value="IN_A_ONLY">Found in Left List Only</option>
+            <option value="IN_B_ONLY">Found in Mid List Only</option>
+            <option value="NOT_IN_A_OR_B">Not Found in Lists</option>
           </select>
         </div>
       </div>
@@ -725,10 +761,10 @@
         <table>
           <thead>
             <tr>
-              <th style="width: 36px;">#</th>
-              <th>VIN (Test Car)</th>
-              <th style="width: 110px;">Detected In</th>
-              <th>Note (Editable)</th>
+              <th id="th-c-index" class="sortable" style="width: 44px;" onclick="toggleSort('listC', 'index')"># <span class="sort-icon">↕</span></th>
+              <th id="th-c-vin" class="sortable" onclick="toggleSort('listC', 'vin')">VIN (Test Car) <span class="sort-icon">↕</span></th>
+              <th id="th-c-status" class="sortable" style="width: 110px;" onclick="toggleSort('listC', 'status')">Detected In <span class="sort-icon">↕</span></th>
+              <th id="th-c-note" class="sortable" onclick="toggleSort('listC', 'note')">Note (Editable) <span class="sort-icon">↕</span></th>
               <th style="width: 32px;"></th>
             </tr>
           </thead>
@@ -798,6 +834,12 @@
         autoTrimUpper: true,
         skipTestVehiclesInDiff: true
       }
+    };
+
+    const sortState = {
+      listA: { column: 'index', direction: 'none' }, // 'asc' | 'desc' | 'none'
+      listB: { column: 'index', direction: 'none' },
+      listC: { column: 'index', direction: 'none' }
     };
 
     let comparison = {
@@ -1005,6 +1047,39 @@
       showToast('Swapped contents of ' + state.listNames.listA + ' and ' + state.listNames.listB);
     }
 
+    // ----------------- Sorting Engine ----------------- //
+    function toggleSort(listKey, column) {
+      const current = sortState[listKey];
+      if (current.column === column) {
+        if (current.direction === 'none') current.direction = 'asc';
+        else if (current.direction === 'asc') current.direction = 'desc';
+        else current.direction = 'none';
+      } else {
+        current.column = column;
+        current.direction = 'asc';
+      }
+      renderPanel(listKey);
+    }
+
+    function updateSortHeaderUI(listKey) {
+      const prefix = listKey === 'listA' ? 'th-a-' : (listKey === 'listB' ? 'th-b-' : 'th-c-');
+      const columns = ['index', 'vin', 'status', 'note'];
+      const current = sortState[listKey];
+
+      columns.forEach(col => {
+        const th = document.getElementById(prefix + col);
+        if (!th) return;
+        const iconSpan = th.querySelector('.sort-icon');
+        if (current.column === col && current.direction !== 'none') {
+          th.classList.add('sort-active');
+          if (iconSpan) iconSpan.textContent = current.direction === 'asc' ? '▲' : '▼';
+        } else {
+          th.classList.remove('sort-active');
+          if (iconSpan) iconSpan.textContent = '↕';
+        }
+      });
+    }
+
     function getBadgeHTML(status, listKey) {
       if (listKey === 'listC') {
         switch(status) {
@@ -1035,8 +1110,15 @@
       const list = state[listKey] || [];
       const statusMap = listKey === 'listA' ? comparison.statusMapA : (listKey === 'listB' ? comparison.statusMapB : comparison.statusMapC);
 
-      const filtered = list.filter((item, index) => {
-        const status = statusMap.get(item.id);
+      // Attach original index for reliable order tracking
+      let itemsWithIndex = list.map((item, originalIndex) => ({
+        item,
+        originalIndex,
+        status: statusMap.get(item.id) || ''
+      }));
+
+      // Filter by status and search text
+      let filtered = itemsWithIndex.filter(({ item, status }) => {
         if (filterVal !== 'ALL' && status !== filterVal) return false;
         if (searchVal) {
           const matchVin = item.vin.toLowerCase().includes(searchVal);
@@ -1046,18 +1128,44 @@
         return true;
       });
 
+      // Apply Column Sorting if active
+      const currentSort = sortState[listKey];
+      if (currentSort.direction !== 'none') {
+        const dir = currentSort.direction === 'asc' ? 1 : -1;
+        filtered.sort((a, b) => {
+          if (currentSort.column === 'index') {
+            return (a.originalIndex - b.originalIndex) * dir;
+          }
+          if (currentSort.column === 'vin') {
+            return a.item.vin.localeCompare(b.item.vin) * dir;
+          }
+          if (currentSort.column === 'status') {
+            return a.status.localeCompare(b.status) * dir;
+          }
+          if (currentSort.column === 'note') {
+            const noteA = a.item.note || '';
+            const noteB = b.item.note || '';
+            if (!noteA && noteB) return 1;
+            if (noteA && !noteB) return -1;
+            return noteA.localeCompare(noteB) * dir;
+          }
+          return 0;
+        });
+      }
+
+      updateSortHeaderUI(listKey);
+
       if (filtered.length === 0) {
         tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 24px; color: var(--text-muted);">No records to display</td></tr>`;
         return;
       }
 
       let html = '';
-      filtered.forEach((item, idx) => {
-        const status = statusMap.get(item.id);
+      filtered.forEach(({ item, originalIndex, status }) => {
         const badge = getBadgeHTML(status, listKey);
         html += `
           <tr>
-            <td style="color: var(--text-muted); font-size: 0.75rem;">${idx + 1}</td>
+            <td style="color: var(--text-muted); font-size: 0.75rem;">${originalIndex + 1}</td>
             <td>
               <div class="vin-cell">
                 <span>${escapeHtml(item.vin)}</span>
@@ -1179,6 +1287,7 @@
       if (mode === 'replace') {
         state[currentModalTarget] = records;
       } else {
+        // Append mode (prevent direct exact duplicate ID collisions)
         state[currentModalTarget] = [...state[currentModalTarget], ...records];
       }
 
