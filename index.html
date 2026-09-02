@@ -173,6 +173,33 @@
       font-size: 0.75rem;
     }
 
+    .btn-rename {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.85rem;
+      padding: 2px 4px;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      transition: all 0.15s ease;
+    }
+    .btn-rename:hover {
+      color: var(--accent-blue);
+      background: var(--bg-tertiary);
+    }
+
+    .title-text {
+      cursor: pointer;
+      border-bottom: 1px dashed transparent;
+      transition: border-color 0.15s ease;
+    }
+    .title-text:hover {
+      border-bottom-color: var(--accent-blue);
+      color: var(--accent-blue);
+    }
+
     /* Metrics Summary Bar */
     #metrics-summary {
       display: flex;
@@ -195,6 +222,10 @@
     .metric-label {
       color: var(--text-secondary);
       font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 180px;
     }
     .metric-value {
       font-weight: 700;
@@ -253,7 +284,7 @@
       font-size: 0.95rem;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
 
     .panel-count {
@@ -551,27 +582,27 @@
     <!-- Live Metrics Summary Bar -->
     <div id="metrics-summary">
       <div class="metric-pill" style="border-left: 3px solid var(--panel-a-border);">
-        <span class="metric-label">List A Total:</span>
+        <span id="metric-label-a" class="metric-label">List A Total:</span>
         <span id="metric-a" class="metric-value">0</span>
       </div>
       <div class="metric-pill" style="border-left: 3px solid var(--panel-b-border);">
-        <span class="metric-label">List B Total:</span>
+        <span id="metric-label-b" class="metric-label">List B Total:</span>
         <span id="metric-b" class="metric-value">0</span>
       </div>
       <div class="metric-pill" style="border-left: 3px solid var(--accent-green);">
-        <span class="metric-label">✅ Matched (A ∩ B):</span>
+        <span class="metric-label">✅ Matched Overlap:</span>
         <span id="metric-matched" class="metric-value">0</span>
       </div>
       <div class="metric-pill" style="border-left: 3px solid var(--accent-amber);">
-        <span class="metric-label">⚠️ Only in List A:</span>
+        <span id="metric-label-only-a" class="metric-label">⚠️ Only in List A:</span>
         <span id="metric-only-a" class="metric-value">0</span>
       </div>
       <div class="metric-pill" style="border-left: 3px solid var(--accent-amber);">
-        <span class="metric-label">⚠️ Only in List B:</span>
+        <span id="metric-label-only-b" class="metric-label">⚠️ Only in List B:</span>
         <span id="metric-only-b" class="metric-value">0</span>
       </div>
       <div class="metric-pill" style="border-left: 3px solid var(--panel-c-border);">
-        <span class="metric-label">🧪 Test Vehicles (C):</span>
+        <span id="metric-label-c" class="metric-label">🧪 Test Vehicles:</span>
         <span id="metric-c" class="metric-value">0</span>
       </div>
     </div>
@@ -583,9 +614,13 @@
     <section id="panel-a" class="panel">
       <div class="panel-header">
         <div class="panel-title-row">
-          <span class="panel-title">List A (Baseline) <span id="count-a" class="panel-count">0</span></span>
+          <span class="panel-title">
+            <span id="title-text-a" class="title-text" onclick="renameList('listA')" title="Click to rename">List A (Baseline)</span>
+            <button class="btn-rename" onclick="renameList('listA')" title="Rename list">✏️</button>
+            <span id="count-a" class="panel-count">0</span>
+          </span>
           <div class="panel-toolbar">
-            <button class="btn btn-sm btn-primary" onclick="openImportModal('listA', 'List A')">+ Import</button>
+            <button class="btn btn-sm btn-primary" onclick="openImportModal('listA')">+ Import</button>
             <button class="btn btn-sm" onclick="promptAddSingle('listA')">+ Add</button>
             <button class="btn btn-sm" onclick="copyPanelVins('listA')">📋 Copy</button>
             <button class="btn btn-sm btn-danger" onclick="clearList('listA')">Clear</button>
@@ -596,7 +631,7 @@
           <select id="filter-a" class="filter-select" onchange="renderPanel('listA')">
             <option value="ALL">All Statuses</option>
             <option value="MATCHED">Matched</option>
-            <option value="ONLY_IN_A">Only in A</option>
+            <option value="ONLY_IN_A">Only Here</option>
             <option value="TEST_VEHICLE">Test Vehicle (Ignored)</option>
           </select>
         </div>
@@ -621,9 +656,13 @@
     <section id="panel-b" class="panel">
       <div class="panel-header">
         <div class="panel-title-row">
-          <span class="panel-title">List B (Comparison) <span id="count-b" class="panel-count">0</span></span>
+          <span class="panel-title">
+            <span id="title-text-b" class="title-text" onclick="renameList('listB')" title="Click to rename">List B (Comparison)</span>
+            <button class="btn-rename" onclick="renameList('listB')" title="Rename list">✏️</button>
+            <span id="count-b" class="panel-count">0</span>
+          </span>
           <div class="panel-toolbar">
-            <button class="btn btn-sm btn-primary" onclick="openImportModal('listB', 'List B')">+ Import</button>
+            <button class="btn btn-sm btn-primary" onclick="openImportModal('listB')">+ Import</button>
             <button class="btn btn-sm" onclick="promptAddSingle('listB')">+ Add</button>
             <button class="btn btn-sm" onclick="copyPanelVins('listB')">📋 Copy</button>
             <button class="btn btn-sm btn-danger" onclick="clearList('listB')">Clear</button>
@@ -634,7 +673,7 @@
           <select id="filter-b" class="filter-select" onchange="renderPanel('listB')">
             <option value="ALL">All Statuses</option>
             <option value="MATCHED">Matched</option>
-            <option value="ONLY_IN_B">Only in B</option>
+            <option value="ONLY_IN_B">Only Here</option>
             <option value="TEST_VEHICLE">Test Vehicle (Ignored)</option>
           </select>
         </div>
@@ -659,9 +698,13 @@
     <section id="panel-c" class="panel">
       <div class="panel-header">
         <div class="panel-title-row">
-          <span class="panel-title">List C (Test Vehicles) <span id="count-c" class="panel-count">0</span></span>
+          <span class="panel-title">
+            <span id="title-text-c" class="title-text" onclick="renameList('listC')" title="Click to rename">List C (Test Vehicles)</span>
+            <button class="btn-rename" onclick="renameList('listC')" title="Rename list">✏️</button>
+            <span id="count-c" class="panel-count">0</span>
+          </span>
           <div class="panel-toolbar">
-            <button class="btn btn-sm btn-primary" onclick="openImportModal('listC', 'List C (Test Vehicles)')">+ Import</button>
+            <button class="btn btn-sm btn-primary" onclick="openImportModal('listC')">+ Import</button>
             <button class="btn btn-sm" onclick="promptAddSingle('listC')">+ Add</button>
             <button class="btn btn-sm" onclick="copyPanelVins('listC')">📋 Copy</button>
             <button class="btn btn-sm btn-danger" onclick="clearList('listC')">Clear</button>
@@ -737,12 +780,19 @@
   <!-- Application Logic -->
   <script>
     const STORAGE_KEY = 'vin_compare_app_state_v1';
+    const DEFAULT_LIST_NAMES = {
+      listA: 'List A (Baseline)',
+      listB: 'List B (Comparison)',
+      listC: 'List C (Test Vehicles)'
+    };
+
     let currentModalTarget = 'listA';
 
     let state = {
       listA: [],
       listB: [],
       listC: [],
+      listNames: { ...DEFAULT_LIST_NAMES },
       settings: {
         theme: 'dark',
         autoTrimUpper: true,
@@ -881,12 +931,20 @@
           state.listA = Array.isArray(parsed.listA) ? parsed.listA : [];
           state.listB = Array.isArray(parsed.listB) ? parsed.listB : [];
           state.listC = Array.isArray(parsed.listC) ? parsed.listC : [];
+          if (parsed.listNames) {
+            state.listNames = {
+              listA: parsed.listNames.listA || DEFAULT_LIST_NAMES.listA,
+              listB: parsed.listNames.listB || DEFAULT_LIST_NAMES.listB,
+              listC: parsed.listNames.listC || DEFAULT_LIST_NAMES.listC
+            };
+          }
           if (parsed.settings) state.settings = { ...state.settings, ...parsed.settings };
         }
       } catch (e) {
         console.error('Failed to load state', e);
       }
       applyTheme(state.settings.theme);
+      updateListTitles();
       recalculateAndRender();
     }
 
@@ -897,6 +955,33 @@
       renderPanel('listB');
       renderPanel('listC');
       scheduleSave();
+    }
+
+    function updateListTitles() {
+      const nameA = state.listNames.listA || DEFAULT_LIST_NAMES.listA;
+      const nameB = state.listNames.listB || DEFAULT_LIST_NAMES.listB;
+      const nameC = state.listNames.listC || DEFAULT_LIST_NAMES.listC;
+
+      document.getElementById('title-text-a').textContent = nameA;
+      document.getElementById('title-text-b').textContent = nameB;
+      document.getElementById('title-text-c').textContent = nameC;
+
+      document.getElementById('metric-label-a').textContent = nameA + ' Total:';
+      document.getElementById('metric-label-b').textContent = nameB + ' Total:';
+      document.getElementById('metric-label-only-a').textContent = '⚠️ Only in ' + nameA + ':';
+      document.getElementById('metric-label-only-b').textContent = '⚠️ Only in ' + nameB + ':';
+      document.getElementById('metric-label-c').textContent = '🧪 ' + nameC + ':';
+    }
+
+    function renameList(listKey) {
+      const currentName = state.listNames[listKey] || DEFAULT_LIST_NAMES[listKey];
+      const newName = prompt('Enter new name for this list:', currentName);
+      if (newName !== null && newName.trim()) {
+        state.listNames[listKey] = newName.trim();
+        updateListTitles();
+        scheduleSave();
+        showToast('List renamed to: ' + newName.trim());
+      }
     }
 
     function updateMetricsUI() {
@@ -917,22 +1002,22 @@
       state.listA = state.listB;
       state.listB = temp;
       recalculateAndRender();
-      showToast('Swapped List A and List B');
+      showToast('Swapped contents of ' + state.listNames.listA + ' and ' + state.listNames.listB);
     }
 
     function getBadgeHTML(status, listKey) {
       if (listKey === 'listC') {
         switch(status) {
-          case 'IN_A_AND_B': return '<span class="badge badge-test">Both A & B</span>';
-          case 'IN_A_ONLY': return '<span class="badge badge-diff">In A Only</span>';
-          case 'IN_B_ONLY': return '<span class="badge badge-diff">In B Only</span>';
-          default: return '<span class="badge badge-neutral">Not in A/B</span>';
+          case 'IN_A_AND_B': return '<span class="badge badge-test">Both Lists</span>';
+          case 'IN_A_ONLY': return '<span class="badge badge-diff">In Left Only</span>';
+          case 'IN_B_ONLY': return '<span class="badge badge-diff">In Mid Only</span>';
+          default: return '<span class="badge badge-neutral">Not in Lists</span>';
         }
       }
       switch (status) {
         case 'MATCHED': return '<span class="badge badge-matched">Matched</span>';
-        case 'ONLY_IN_A': return '<span class="badge badge-diff">Only in A</span>';
-        case 'ONLY_IN_B': return '<span class="badge badge-diff">Only in B</span>';
+        case 'ONLY_IN_A': return '<span class="badge badge-diff">Only Here</span>';
+        case 'ONLY_IN_B': return '<span class="badge badge-diff">Only Here</span>';
         case 'TEST_VEHICLE': return '<span class="badge badge-test">Test Car</span>';
         default: return '<span class="badge badge-neutral">-</span>';
       }
@@ -1008,15 +1093,17 @@
     }
 
     function clearList(listKey) {
+      const listName = state.listNames[listKey] || listKey.toUpperCase();
       if (state[listKey].length === 0) return;
-      if (confirm(`Are you sure you want to clear ${listKey.toUpperCase()}?`)) {
+      if (confirm(`Are you sure you want to clear "${listName}"?`)) {
         state[listKey] = [];
         recalculateAndRender();
       }
     }
 
     function promptAddSingle(listKey) {
-      const vinInput = prompt("Enter VIN(s) (supports single VIN, comma/semicolon-separated, or multi-line):");
+      const listName = state.listNames[listKey] || listKey.toUpperCase();
+      const vinInput = prompt(`Enter VIN(s) for "${listName}" (supports single VIN, comma/semicolon-separated, or multi-line):`);
       if (!vinInput) return;
       const parsed = parsePastedText(vinInput);
       if (parsed.length === 0) return;
@@ -1041,7 +1128,7 @@
             addedAt: Date.now()
           });
         }
-        showToast(`Added ${parsed.length} VINs to ${listKey.toUpperCase()}`);
+        showToast(`Added ${parsed.length} VINs to ${listName}`);
       }
       recalculateAndRender();
     }
@@ -1058,9 +1145,10 @@
     }
 
     // ----------------- Import Modal Logic ----------------- //
-    function openImportModal(listKey, title) {
+    function openImportModal(listKey) {
       currentModalTarget = listKey;
-      document.getElementById('modal-target-title').textContent = 'Import into ' + title;
+      const targetName = state.listNames[listKey] || listKey;
+      document.getElementById('modal-target-title').textContent = 'Import into ' + targetName;
       document.getElementById('modal-paste-area').value = '';
       document.getElementById('modal-file-input').value = '';
       document.getElementById('batch-paste-modal').classList.add('active');
@@ -1091,13 +1179,12 @@
       if (mode === 'replace') {
         state[currentModalTarget] = records;
       } else {
-        // Append mode (prevent direct exact duplicate ID collisions)
         state[currentModalTarget] = [...state[currentModalTarget], ...records];
       }
 
       closeImportModal();
       recalculateAndRender();
-      showToast(`Imported ${records.length} VINs successfully`);
+      showToast(`Imported ${records.length} VINs into ${state.listNames[currentModalTarget] || currentModalTarget}`);
     }
 
     // Drag and Drop & File Upload handling
@@ -1150,6 +1237,12 @@
       }
     }
 
+    function sanitizeExcelSheetName(name, fallback) {
+      if (!name) return fallback;
+      const clean = name.replace(/[\\/?*:[\]]/g, '').trim();
+      return (clean || fallback).substring(0, 31);
+    }
+
     // ----------------- Export Capabilities ----------------- //
     function exportMasterExcel() {
       if (typeof XLSX === 'undefined') {
@@ -1158,19 +1251,23 @@
         return;
       }
 
+      const nameA = state.listNames.listA || 'List A';
+      const nameB = state.listNames.listB || 'List B';
+      const nameC = state.listNames.listC || 'Test Vehicles';
+
       const wb = XLSX.utils.book_new();
 
       // Summary Sheet
       const summaryData = [
         ['Metric', 'Count'],
-        ['Total in List A', state.listA.length],
-        ['Total in List B', state.listB.length],
-        ['Matched Overlap (A & B)', comparison.stats.matched],
-        ['Discrepancies (Only in A)', comparison.stats.onlyA],
-        ['Discrepancies (Only in B)', comparison.stats.onlyB],
-        ['Ignored Test Vehicles in A', comparison.stats.testIgnoredInA],
-        ['Ignored Test Vehicles in B', comparison.stats.testIgnoredInB],
-        ['Total Reference Test Vehicles (C)', state.listC.length]
+        [`Total in ${nameA}`, state.listA.length],
+        [`Total in ${nameB}`, state.listB.length],
+        [`Matched Overlap (${nameA} & ${nameB})`, comparison.stats.matched],
+        [`Discrepancies (Only in ${nameA})`, comparison.stats.onlyA],
+        [`Discrepancies (Only in ${nameB})`, comparison.stats.onlyB],
+        [`Ignored Test Vehicles in ${nameA}`, comparison.stats.testIgnoredInA],
+        [`Ignored Test Vehicles in ${nameB}`, comparison.stats.testIgnoredInB],
+        [`Total Reference ${nameC}`, state.listC.length]
       ];
       XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(summaryData), 'Summary');
 
@@ -1178,36 +1275,41 @@
       const matchedRows = [['VIN', 'Source', 'Note']];
       state.listA.forEach(r => {
         if (comparison.statusMapA.get(r.id) === 'MATCHED') {
-          matchedRows.push([r.vin, 'Matched in A & B', r.note || '']);
+          matchedRows.push([r.vin, `Matched in ${nameA} & ${nameB}`, r.note || '']);
         }
       });
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(matchedRows), 'Matched (A & B)');
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(matchedRows), 'Matched Overlap');
 
       // Only in A
       const onlyARows = [['VIN', 'Status', 'Note']];
       state.listA.forEach(r => {
         if (comparison.statusMapA.get(r.id) === 'ONLY_IN_A') {
-          onlyARows.push([r.vin, 'Only in A', r.note || '']);
+          onlyARows.push([r.vin, `Only in ${nameA}`, r.note || '']);
         }
       });
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(onlyARows), 'Only in List A');
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(onlyARows), sanitizeExcelSheetName(`Only in ${nameA}`, 'Only in A'));
 
       // Only in B
       const onlyBRows = [['VIN', 'Status', 'Note']];
       state.listB.forEach(r => {
         if (comparison.statusMapB.get(r.id) === 'ONLY_IN_B') {
-          onlyBRows.push([r.vin, 'Only in B', r.note || '']);
+          onlyBRows.push([r.vin, `Only in ${nameB}`, r.note || '']);
         }
       });
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(onlyBRows), 'Only in List B');
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(onlyBRows), sanitizeExcelSheetName(`Only in ${nameB}`, 'Only in B'));
 
       // Test Vehicles
       const testRows = [['VIN', 'Detected Presence', 'Note']];
       state.listC.forEach(r => {
         const detected = comparison.statusMapC.get(r.id);
-        testRows.push([r.vin, detected || 'NOT_IN_A_OR_B', r.note || '']);
+        let presenceText = 'NOT_IN_LISTS';
+        if (detected === 'IN_A_AND_B') presenceText = `Found in both ${nameA} & ${nameB}`;
+        else if (detected === 'IN_A_ONLY') presenceText = `Found in ${nameA} Only`;
+        else if (detected === 'IN_B_ONLY') presenceText = `Found in ${nameB} Only`;
+
+        testRows.push([r.vin, presenceText, r.note || '']);
       });
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(testRows), 'Test Vehicles (C)');
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(testRows), sanitizeExcelSheetName(nameC, 'Test Vehicles'));
 
       const filename = `VIN_Comparison_Report_${new Date().toISOString().slice(0,10)}.xlsx`;
       XLSX.writeFile(wb, filename);
@@ -1215,10 +1317,14 @@
     }
 
     function exportMasterCSV() {
+      const nameA = state.listNames.listA || 'List A';
+      const nameB = state.listNames.listB || 'List B';
+      const nameC = state.listNames.listC || 'Test Vehicles';
+
       const rows = [['List', 'VIN', 'Status', 'Note']];
-      state.listA.forEach(r => rows.push(['List A', r.vin, comparison.statusMapA.get(r.id) || '', r.note || '']));
-      state.listB.forEach(r => rows.push(['List B', r.vin, comparison.statusMapB.get(r.id) || '', r.note || '']));
-      state.listC.forEach(r => rows.push(['List C (Test)', r.vin, comparison.statusMapC.get(r.id) || '', r.note || '']));
+      state.listA.forEach(r => rows.push([nameA, r.vin, comparison.statusMapA.get(r.id) || '', r.note || '']));
+      state.listB.forEach(r => rows.push([nameB, r.vin, comparison.statusMapB.get(r.id) || '', r.note || '']));
+      state.listC.forEach(r => rows.push([nameC, r.vin, comparison.statusMapC.get(r.id) || '', r.note || '']));
 
       const csvContent = rows.map(r => r.map(f => `"${String(f).replace(/"/g, '""')}"`).join(',')).join('\r\n');
       downloadFile(csvContent, `VIN_Comparison_Master_${new Date().toISOString().slice(0,10)}.csv`, 'text/csv;charset=utf-8;');
@@ -1247,7 +1353,15 @@
             state.listA = Array.isArray(parsed.listA) ? parsed.listA : [];
             state.listB = Array.isArray(parsed.listB) ? parsed.listB : [];
             state.listC = Array.isArray(parsed.listC) ? parsed.listC : [];
+            if (parsed.listNames) {
+              state.listNames = {
+                listA: parsed.listNames.listA || DEFAULT_LIST_NAMES.listA,
+                listB: parsed.listNames.listB || DEFAULT_LIST_NAMES.listB,
+                listC: parsed.listNames.listC || DEFAULT_LIST_NAMES.listC
+              };
+            }
             if (parsed.settings) state.settings = parsed.settings;
+            updateListTitles();
             recalculateAndRender();
             showToast('Workspace restored successfully');
           } else {

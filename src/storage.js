@@ -1,10 +1,17 @@
 export const STORAGE_KEY = 'vin_compare_app_state_v1';
 
+export const DEFAULT_LIST_NAMES = {
+  listA: 'List A (Baseline)',
+  listB: 'List B (Comparison)',
+  listC: 'List C (Test Vehicles)'
+};
+
 export function createInitialState() {
   return {
     listA: [],
     listB: [],
     listC: [],
+    listNames: { ...DEFAULT_LIST_NAMES },
     settings: {
       theme: 'dark',
       autoTrimUpper: true,
@@ -28,10 +35,19 @@ export function validateAndMigrateState(raw) {
     }));
   };
 
+  const sanitizeNames = (names) => {
+    return {
+      listA: (names && typeof names.listA === 'string' && names.listA.trim()) ? names.listA.trim() : DEFAULT_LIST_NAMES.listA,
+      listB: (names && typeof names.listB === 'string' && names.listB.trim()) ? names.listB.trim() : DEFAULT_LIST_NAMES.listB,
+      listC: (names && typeof names.listC === 'string' && names.listC.trim()) ? names.listC.trim() : DEFAULT_LIST_NAMES.listC
+    };
+  };
+
   return {
     listA: sanitizeList(raw.listA),
     listB: sanitizeList(raw.listB),
     listC: sanitizeList(raw.listC),
+    listNames: sanitizeNames(raw.listNames),
     settings: {
       theme: raw.settings?.theme === 'light' ? 'light' : 'dark',
       autoTrimUpper: raw.settings?.autoTrimUpper !== false,

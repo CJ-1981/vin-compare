@@ -21,4 +21,6 @@ test('index.html exists and contains necessary panels, UI markers, and features'
   assert.match(html, /copy/i);
   assert.match(html, /swapListsAB/);
   assert.match(html, /Swap A & B/i);
+  assert.match(html, /renameList/);
+  assert.match(html, /listNames/);
 });
