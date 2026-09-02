@@ -16,7 +16,8 @@ A standalone, high-performance HTML/JS/CSS tool for comparing two lists of Vehic
    - Click any panel header title or the `✏️` edit button to rename `List A`, `List B`, or `List C` to custom labels (e.g., `Factory Inventory`, `Port Delivery`, `Mule Prototypes`).
    - Custom names dynamically propagate across live metrics counters, import dialogs, Master Excel sheets/metrics, and CSV exports.
 3. **Multi-Select Status Filter Dropdown:**
-   - Popover dropdown filter in each panel allowing multi-selection of statuses (`Matched`, `Only Here`, `Test Vehicle`, etc.).
+   - Popover dropdown filter in each panel allowing independent multi-selection of statuses: `Matched`, `Matched (Test Car)`, `Only Here`, and `Test Vehicle (Ignored)`.
+   - Allows users to easily filter out or isolate dual-condition vehicles (`Matched (Test Car)`) with a single click.
    - Includes quick **"Select All"** and **"Clear"** buttons with live button labels reflecting selected count.
 4. **Interactive Column Sorting:**
    - Click any column header (`#`, `VIN`, `Status`/`Detected In`, `Note`) to cycle between **Ascending (`▲`)**, **Descending (`▼`)**, and **Default Index Order**.

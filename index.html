@@ -779,6 +779,9 @@
                 <input type="checkbox" value="MATCHED" checked onchange="onFilterCheckboxChange('listA')"> Matched
               </label>
               <label class="multi-select-item">
+                <input type="checkbox" value="MATCHED_TEST_VEHICLE" checked onchange="onFilterCheckboxChange('listA')"> Matched (Test Car)
+              </label>
+              <label class="multi-select-item">
                 <input type="checkbox" value="ONLY_IN_A" checked onchange="onFilterCheckboxChange('listA')"> Only Here
               </label>
               <label class="multi-select-item">
@@ -834,6 +837,9 @@
               </div>
               <label class="multi-select-item">
                 <input type="checkbox" value="MATCHED" checked onchange="onFilterCheckboxChange('listB')"> Matched
+              </label>
+              <label class="multi-select-item">
+                <input type="checkbox" value="MATCHED_TEST_VEHICLE" checked onchange="onFilterCheckboxChange('listB')"> Matched (Test Car)
               </label>
               <label class="multi-select-item">
                 <input type="checkbox" value="ONLY_IN_B" checked onchange="onFilterCheckboxChange('listB')"> Only Here
@@ -999,8 +1005,8 @@
     const sortState = state.sortState;
 
     const filterState = {
-      listA: new Set(['MATCHED', 'ONLY_IN_A', 'TEST_VEHICLE']),
-      listB: new Set(['MATCHED', 'ONLY_IN_B', 'TEST_VEHICLE']),
+      listA: new Set(['MATCHED', 'MATCHED_TEST_VEHICLE', 'ONLY_IN_A', 'TEST_VEHICLE']),
+      listB: new Set(['MATCHED', 'MATCHED_TEST_VEHICLE', 'ONLY_IN_B', 'TEST_VEHICLE']),
       listC: new Set(['IN_A_AND_B', 'IN_A_ONLY', 'IN_B_ONLY', 'NOT_IN_A_OR_B'])
     };
 
@@ -1397,15 +1403,7 @@
       }));
 
       let filtered = itemsWithIndex.filter(({ item, status }) => {
-        let passesFilter = false;
-        if (activeStatuses.has(status)) {
-          passesFilter = true;
-        } else if (status === 'MATCHED_TEST_VEHICLE') {
-          if (activeStatuses.has('MATCHED') || activeStatuses.has('TEST_VEHICLE')) {
-            passesFilter = true;
-          }
-        }
-        if (!passesFilter) return false;
+        if (!activeStatuses.has(status)) return false;
 
         if (searchVal) {
           const matchVin = item.vin.toLowerCase().includes(searchVal);

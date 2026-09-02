@@ -40,6 +40,7 @@ test('index.html exists and contains necessary panels, UI markers, and features'
   assert.match(html, /id="modal-live-counter"/);
   assert.match(html, /updateModalLiveCounter/);
 
-  // Dual badging for matched test vehicles
+  // Dual badging and explicit filter checkbox for matched test vehicles
   assert.match(html, /MATCHED_TEST_VEHICLE/);
+  assert.match(html, /value="MATCHED_TEST_VEHICLE"/);
 });
