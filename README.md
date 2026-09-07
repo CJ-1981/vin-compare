@@ -1,4 +1,4 @@
-# 🚗 VIN Tri-Panel Comparator & Test Vehicle Filter `v1.4.4`
+# 🚗 VIN Tri-Panel Comparator & Test Vehicle Filter `v1.4.5`
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-2ea44f?logo=github&style=flat-square)](https://cj-1981.github.io/vin-compare/)
 [![Deploy to GitHub Pages](https://github.com/CJ-1981/vin-compare/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/CJ-1981/vin-compare/actions/workflows/deploy-pages.yml)
@@ -29,7 +29,7 @@ A standalone, high-performance HTML/JS/CSS tool for comparing two lists of Vehic
 4. **Multi-Select Status Filter Dropdown with Persistence & Visual Highlight:**
    - Popover dropdown filter in each panel allowing independent multi-selection of statuses: `Matched`, `Matched (Test Car)`, `Only Here`, and `Test Vehicle (Ignored)`.
    - **Active State Highlighting:** Whenever a filter is actively restricting records, the filter button font color, border, and background illuminate in vibrant accent cyan (`#38bdf8`) so active filters are unmistakable at a glance.
-   - **Persistent Filter Settings:** All chosen filter checkboxes automatically persist across browser reloads, workspace JSON backup/restore, and List A ⇄ B swaps.
+   - **Persistent Filter Settings:** All chosen filter checkboxes automatically persist across browser reloads, workspace JSON backup/restore, and List A ⇄ B swaps (including proper `ONLY_IN_A` <-> `ONLY_IN_B` mapping).
    - **Smart Inward Alignment:** Popovers are positioned right-aligned (`right: 0`), expanding inward to the left to prevent horizontal viewport overflow on the rightmost column (Panel C).
    - **Live Counts & Smart Availability:** Displays real-time matching counts per status (e.g. `Matched (3)`) and automatically hides statuses with 0 entries in that list.
    - **Dual Badging & Filtering:** Vehicles satisfying both conditions (found in A and B, plus listed in C) receive dual badges `[Matched] [Test Car]` and can be filtered or isolated with `Matched (Test Car)`.
@@ -44,8 +44,8 @@ A standalone, high-performance HTML/JS/CSS tool for comparing two lists of Vehic
    - Live counter dynamically reporting **"Lines: X | Valid VINs detected: Y"** as you type or paste.
    - **Multi-File Drag & Drop / Selection:** Drag and drop multiple `.xlsx`, `.xls`, `.csv`, `.txt` files at once or drop additional files subsequently. Existing entries in the paste box are preserved and new lines are appended automatically.
    - 1-click **"📋 Paste Clipboard"** and **"Clear"** shortcuts.
-8. **List Swap (A ⇄ B) with Title & Sort Swapping:**
-   - Instant 1-click swap button (`⇄ Swap A & B`) in the header toolbar to exchange contents, custom names/titles, and sort states between List A and List B with real-time recalculation.
+8. **List Swap (A ⇄ B) with Title, Sort & Filter Swapping:**
+   - Instant 1-click swap button (`⇄ Swap A & B`) in the header toolbar to exchange contents, custom names/titles, sort states, and active filter selections between List A and List B with real-time recalculation.
 9. **Inline Editable Notes with Enter-Blur:**
    - Dedicated Note column for every VIN across all 3 panels.
    - Edit notes directly in the table; changes are automatically persisted.

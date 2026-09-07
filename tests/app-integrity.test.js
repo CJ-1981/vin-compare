@@ -25,7 +25,7 @@ test('index.html exists and contains necessary panels, UI markers, and features'
   assert.match(html, /listNames/);
 
   // Version in title
-  assert.match(html, /v1\.4\.4/i);
+  assert.match(html, /v1\.4\.5/i);
 
   // Column sorting feature & persistence
   assert.match(html, /toggleSort/);
@@ -82,4 +82,7 @@ test('index.html exists and contains necessary panels, UI markers, and features'
   // Highlight active filter button and font color
   assert.match(html, /\.multi-select-btn\.active/);
   assert.match(html, /classList\.toggle\('active'/);
+
+  // swapListsAB correctly translates ONLY_IN_A and ONLY_IN_B filter keys
+  assert.match(html, /swapListsAB[\s\S]*?ONLY_IN_B[\s\S]*?ONLY_IN_A/);
 });

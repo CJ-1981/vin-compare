@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VIN Tri-Panel Comparator & Test Vehicle Filter v1.4.4</title>
+  <title>VIN Tri-Panel Comparator & Test Vehicle Filter v1.4.5</title>
   <!-- Optional SheetJS for XLSX support with fallback -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
@@ -706,7 +706,7 @@
     <div class="header-top">
       <div class="brand-title">
         <span>🚗 VIN Comparator</span>
-        <span class="version-badge">v1.4.4</span>
+        <span class="version-badge">v1.4.5</span>
         <span class="brand-badge">3-Panel Diff & Test Vehicles</span>
       </div>
       <div class="header-actions">
@@ -1398,13 +1398,22 @@
       state.sortState.listA = state.sortState.listB;
       state.sortState.listB = tempSort;
 
-      const tempFilter = state.filterState.listA;
-      state.filterState.listA = state.filterState.listB;
-      state.filterState.listB = tempFilter;
+      const newFilterSetA = new Set();
+      filterState.listB.forEach(val => {
+        if (val === 'ONLY_IN_B') newFilterSetA.add('ONLY_IN_A');
+        else newFilterSetA.add(val);
+      });
 
-      const tempFilterSet = filterState.listA;
-      filterState.listA = filterState.listB;
-      filterState.listB = tempFilterSet;
+      const newFilterSetB = new Set();
+      filterState.listA.forEach(val => {
+        if (val === 'ONLY_IN_A') newFilterSetB.add('ONLY_IN_B');
+        else newFilterSetB.add(val);
+      });
+
+      filterState.listA = newFilterSetA;
+      filterState.listB = newFilterSetB;
+      state.filterState.listA = Array.from(newFilterSetA);
+      state.filterState.listB = Array.from(newFilterSetB);
 
       syncFilterCheckboxes();
       updateListTitles();
