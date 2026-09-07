@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VIN Tri-Panel Comparator & Test Vehicle Filter v1.4.3</title>
+  <title>VIN Tri-Panel Comparator & Test Vehicle Filter v1.4.4</title>
   <!-- Optional SheetJS for XLSX support with fallback -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
@@ -233,6 +233,12 @@
     }
     .multi-select-btn:hover {
       border-color: var(--border-focus);
+    }
+    .multi-select-btn.active {
+      color: var(--accent-blue);
+      border-color: var(--accent-blue);
+      background: rgba(56, 189, 248, 0.12);
+      font-weight: 600;
     }
     .multi-select-popover {
       position: absolute;
@@ -700,7 +706,7 @@
     <div class="header-top">
       <div class="brand-title">
         <span>🚗 VIN Comparator</span>
-        <span class="version-badge">v1.4.3</span>
+        <span class="version-badge">v1.4.4</span>
         <span class="brand-badge">3-Panel Diff & Test Vehicles</span>
       </div>
       <div class="header-actions">
@@ -1001,6 +1007,12 @@
 
     let currentModalTarget = 'listA';
 
+    const DEFAULT_FILTERS = {
+      listA: ['MATCHED', 'MATCHED_TEST_VEHICLE', 'ONLY_IN_A', 'TEST_VEHICLE'],
+      listB: ['MATCHED', 'MATCHED_TEST_VEHICLE', 'ONLY_IN_B', 'TEST_VEHICLE'],
+      listC: ['IN_A_AND_B', 'IN_A_ONLY', 'IN_B_ONLY', 'NOT_IN_A_OR_B']
+    };
+
     let state = {
       listA: [],
       listB: [],
@@ -1010,6 +1022,11 @@
         listA: { column: 'index', direction: 'none' }, // 'asc' | 'desc' | 'none'
         listB: { column: 'index', direction: 'none' },
         listC: { column: 'index', direction: 'none' }
+      },
+      filterState: {
+        listA: [...DEFAULT_FILTERS.listA],
+        listB: [...DEFAULT_FILTERS.listB],
+        listC: [...DEFAULT_FILTERS.listC]
       },
       settings: {
         theme: 'dark',
@@ -1021,9 +1038,9 @@
     const sortState = state.sortState;
 
     const filterState = {
-      listA: new Set(['MATCHED', 'MATCHED_TEST_VEHICLE', 'ONLY_IN_A', 'TEST_VEHICLE']),
-      listB: new Set(['MATCHED', 'MATCHED_TEST_VEHICLE', 'ONLY_IN_B', 'TEST_VEHICLE']),
-      listC: new Set(['IN_A_AND_B', 'IN_A_ONLY', 'IN_B_ONLY', 'NOT_IN_A_OR_B'])
+      listA: new Set(state.filterState.listA),
+      listB: new Set(state.filterState.listB),
+      listC: new Set(state.filterState.listC)
     };
 
     let comparison = {
@@ -1171,7 +1188,8 @@
           listB: JSON.parse(JSON.stringify(state.listB)),
           listC: JSON.parse(JSON.stringify(state.listC)),
           listNames: { ...state.listNames },
-          sortState: JSON.parse(JSON.stringify(state.sortState))
+          sortState: JSON.parse(JSON.stringify(state.sortState)),
+          filterState: JSON.parse(JSON.stringify(state.filterState))
         };
         loadDemoData();
         isSampleDataActive = true;
@@ -1188,6 +1206,13 @@
           state.listC = userWorkspaceBackup.listC;
           state.listNames = userWorkspaceBackup.listNames;
           state.sortState = userWorkspaceBackup.sortState;
+          if (userWorkspaceBackup.filterState) {
+            state.filterState = userWorkspaceBackup.filterState;
+            filterState.listA = new Set(state.filterState.listA);
+            filterState.listB = new Set(state.filterState.listB);
+            filterState.listC = new Set(state.filterState.listC);
+            syncFilterCheckboxes();
+          }
           userWorkspaceBackup = null;
         }
         isSampleDataActive = false;
@@ -1253,6 +1278,16 @@
             state.sortState.listB = parsed.sortState.listB || { column: 'index', direction: 'none' };
             state.sortState.listC = parsed.sortState.listC || { column: 'index', direction: 'none' };
           }
+          if (parsed.filterState) {
+            state.filterState = {
+              listA: Array.isArray(parsed.filterState.listA) ? parsed.filterState.listA : [...DEFAULT_FILTERS.listA],
+              listB: Array.isArray(parsed.filterState.listB) ? parsed.filterState.listB : [...DEFAULT_FILTERS.listB],
+              listC: Array.isArray(parsed.filterState.listC) ? parsed.filterState.listC : [...DEFAULT_FILTERS.listC]
+            };
+            filterState.listA = new Set(state.filterState.listA);
+            filterState.listB = new Set(state.filterState.listB);
+            filterState.listC = new Set(state.filterState.listC);
+          }
           if (parsed.settings) state.settings = { ...state.settings, ...parsed.settings };
         } else {
           isFresh = true;
@@ -1262,6 +1297,7 @@
       }
       applyTheme(state.settings.theme);
       updateListTitles();
+      syncFilterCheckboxes();
 
       if (window.location.search.includes('demo') || (isFresh && state.listA.length === 0 && state.listB.length === 0 && state.listC.length === 0)) {
         loadDemoData();
@@ -1317,6 +1353,18 @@
       document.getElementById('metric-label-c').textContent = '🧪 ' + nameC + ':';
     }
 
+    function syncFilterCheckboxes() {
+      ['listA', 'listB', 'listC'].forEach(listKey => {
+        const popoverId = listKey === 'listA' ? 'filter-popover-a' : (listKey === 'listB' ? 'filter-popover-b' : 'filter-popover-c');
+        const popover = document.getElementById(popoverId);
+        if (!popover) return;
+        const currentSet = filterState[listKey];
+        popover.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+          cb.checked = currentSet.has(cb.value);
+        });
+      });
+    }
+
     function renameList(listKey) {
       const currentName = state.listNames[listKey] || DEFAULT_LIST_NAMES[listKey];
       const newName = prompt('Enter new name for this list:', currentName);
@@ -1350,6 +1398,15 @@
       state.sortState.listA = state.sortState.listB;
       state.sortState.listB = tempSort;
 
+      const tempFilter = state.filterState.listA;
+      state.filterState.listA = state.filterState.listB;
+      state.filterState.listB = tempFilter;
+
+      const tempFilterSet = filterState.listA;
+      filterState.listA = filterState.listB;
+      filterState.listB = tempFilterSet;
+
+      syncFilterCheckboxes();
       updateListTitles();
       recalculateAndRender();
       showToast('Swapped contents and titles of ' + state.listNames.listB + ' and ' + state.listNames.listA);
@@ -1464,6 +1521,13 @@
         }
       });
 
+      const isFiltered = (availableChecked < availableTotal && availableTotal > 0) || (availableChecked === 0 && availableTotal > 0);
+      const btnId = listKey === 'listA' ? 'filter-btn-a' : (listKey === 'listB' ? 'filter-btn-b' : 'filter-btn-c');
+      const btn = document.getElementById(btnId);
+      if (btn) {
+        btn.classList.toggle('active', isFiltered);
+      }
+
       const labelSpan = document.getElementById(labelId);
       if (labelSpan) {
         if (availableChecked === availableTotal || availableTotal === 0) {
@@ -1487,6 +1551,8 @@
       });
 
       filterState[listKey] = selected;
+      state.filterState[listKey] = Array.from(selected);
+      scheduleSave();
       renderPanel(listKey);
     }
 
@@ -1979,6 +2045,17 @@
               state.sortState.listC = parsed.sortState.listC || { column: 'index', direction: 'none' };
             }
             if (parsed.settings) state.settings = parsed.settings;
+            if (parsed.filterState) {
+              state.filterState = {
+                listA: Array.isArray(parsed.filterState.listA) ? parsed.filterState.listA : [...DEFAULT_FILTERS.listA],
+                listB: Array.isArray(parsed.filterState.listB) ? parsed.filterState.listB : [...DEFAULT_FILTERS.listB],
+                listC: Array.isArray(parsed.filterState.listC) ? parsed.filterState.listC : [...DEFAULT_FILTERS.listC]
+              };
+              filterState.listA = new Set(state.filterState.listA);
+              filterState.listB = new Set(state.filterState.listB);
+              filterState.listC = new Set(state.filterState.listC);
+              syncFilterCheckboxes();
+            }
             updateListTitles();
             recalculateAndRender();
             showToast('Workspace restored successfully');

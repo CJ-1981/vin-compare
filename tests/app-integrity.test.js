@@ -25,7 +25,7 @@ test('index.html exists and contains necessary panels, UI markers, and features'
   assert.match(html, /listNames/);
 
   // Version in title
-  assert.match(html, /v1\.4\.3/i);
+  assert.match(html, /v1\.4\.4/i);
 
   // Column sorting feature & persistence
   assert.match(html, /toggleSort/);
@@ -75,4 +75,11 @@ test('index.html exists and contains necessary panels, UI markers, and features'
   // Multi-file handling and append logic
   assert.match(html, /handleFiles/);
   assert.match(html, /appendTextToPasteArea/);
+
+  // Persist filter settings
+  assert.match(html, /parsed\.filterState/);
+
+  // Highlight active filter button and font color
+  assert.match(html, /\.multi-select-btn\.active/);
+  assert.match(html, /classList\.toggle\('active'/);
 });
