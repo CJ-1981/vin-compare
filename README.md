@@ -1,4 +1,4 @@
-# 🚗 VIN Tri-Panel Comparator & Test Vehicle Filter `v1.4.2`
+# 🚗 VIN Tri-Panel Comparator & Test Vehicle Filter `v1.4.3`
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-2ea44f?logo=github&style=flat-square)](https://cj-1981.github.io/vin-compare/)
 [![Deploy to GitHub Pages](https://github.com/CJ-1981/vin-compare/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/CJ-1981/vin-compare/actions/workflows/deploy-pages.yml)
@@ -37,13 +37,13 @@ A standalone, high-performance HTML/JS/CSS tool for comparing two lists of Vehic
    - Sort state is maintained independently per panel and persists automatically across page reloads and JSON workspace backups.
 6. **Real-time Filtered Count in Column Headers:**
    - Header count badges (`#count-a`, `#count-b`, `#count-c`) automatically display `visible / total` (e.g. `2 / 6`) when filters or search queries are active.
-7. **Spacious Add & Batch Import Modal Window:**
+7. **Spacious Add & Batch Import Modal with Multi-File Append:**
    - Large, comfortable vertical modal (`86vh` height, max 900px width) with smooth scrollbar.
    - Live counter dynamically reporting **"Lines: X | Valid VINs detected: Y"** as you type or paste.
+   - **Multi-File Drag & Drop / Selection:** Drag and drop multiple `.xlsx`, `.xls`, `.csv`, `.txt` files at once or drop additional files subsequently. Existing entries in the paste box are preserved and new lines are appended automatically.
    - 1-click **"📋 Paste Clipboard"** and **"Clear"** shortcuts.
-   - Supports long vertical lists of VINs (newline, comma, semicolon, or tab-delimited with notes), plus drag-and-drop for `.xlsx`, `.xls`, `.csv`, `.txt`.
-8. **List Swap (A ⇄ B):**
-   - Instant 1-click swap button (`⇄ Swap A & B`) in the header toolbar to exchange contents between List A and List B with real-time recalculation.
+8. **List Swap (A ⇄ B) with Title & Sort Swapping:**
+   - Instant 1-click swap button (`⇄ Swap A & B`) in the header toolbar to exchange contents, custom names/titles, and sort states between List A and List B with real-time recalculation.
 9. **Inline Editable Notes with Enter-Blur:**
    - Dedicated Note column for every VIN across all 3 panels.
    - Edit notes directly in the table; changes are automatically persisted.

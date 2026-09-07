@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VIN Tri-Panel Comparator & Test Vehicle Filter v1.4.2</title>
+  <title>VIN Tri-Panel Comparator & Test Vehicle Filter v1.4.3</title>
   <!-- Optional SheetJS for XLSX support with fallback -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
@@ -700,7 +700,7 @@
     <div class="header-top">
       <div class="brand-title">
         <span>🚗 VIN Comparator</span>
-        <span class="version-badge">v1.4.2</span>
+        <span class="version-badge">v1.4.3</span>
         <span class="brand-badge">3-Panel Diff & Test Vehicles</span>
       </div>
       <div class="header-actions">
@@ -953,9 +953,9 @@
       </div>
       <div class="modal-body">
         <div id="modal-dropzone" class="dropzone" onclick="document.getElementById('modal-file-input').click()">
-          📁 Drag & drop an Excel (.xlsx, .xls) or CSV / Text file here, or <b>Click to browse</b>
+          📁 Drag & drop Excel (.xlsx, .xls) or CSV / Text files here, or <b>Click to browse</b>
         </div>
-        <input type="file" id="modal-file-input" accept=".xlsx,.xls,.csv,.txt" style="display:none" onchange="handleFileSelect(event)">
+        <input type="file" id="modal-file-input" accept=".xlsx,.xls,.csv,.txt" multiple style="display:none" onchange="handleFileSelect(event)">
         
         <div class="textarea-wrapper">
           <div id="modal-live-counter" style="font-size:0.8rem; font-weight:600; color:var(--accent-blue); display:flex; justify-content:space-between; align-items:center;">
@@ -1341,8 +1341,18 @@
       const temp = state.listA;
       state.listA = state.listB;
       state.listB = temp;
+
+      const tempName = state.listNames.listA;
+      state.listNames.listA = state.listNames.listB;
+      state.listNames.listB = tempName;
+
+      const tempSort = state.sortState.listA;
+      state.sortState.listA = state.sortState.listB;
+      state.sortState.listB = tempSort;
+
+      updateListTitles();
       recalculateAndRender();
-      showToast('Swapped contents of ' + state.listNames.listA + ' and ' + state.listNames.listB);
+      showToast('Swapped contents and titles of ' + state.listNames.listB + ' and ' + state.listNames.listA);
     }
 
     // ----------------- Sorting Engine ----------------- //
@@ -1734,48 +1744,94 @@
     dropzone.addEventListener('drop', (e) => {
       e.preventDefault();
       dropzone.classList.remove('dragover');
-      if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+      if (e.dataTransfer.files && e.dataTransfer.files.length) {
+        handleFiles(Array.from(e.dataTransfer.files));
+      }
     });
 
     function handleFileSelect(event) {
-      if (event.target.files.length) handleFile(event.target.files[0]);
+      if (event.target.files && event.target.files.length) {
+        handleFiles(Array.from(event.target.files));
+      }
+      event.target.value = '';
     }
 
-    function handleFile(file) {
-      const reader = new FileReader();
-      const isExcel = file.name.endsWith('.xlsx') || file.name.endsWith('.xls');
-
-      if (isExcel && typeof XLSX !== 'undefined') {
-        reader.onload = (e) => {
-          try {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, { type: 'array' });
-            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-            const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-            
-            let textBuffer = [];
-            for (const row of rows) {
-              if (Array.isArray(row) && row.length > 0) {
-                const col0 = String(row[0] || '').trim();
-                const col1 = row.length > 1 ? String(row[1] || '').trim() : '';
-                if (col0) textBuffer.push(col1 ? `${col0}\t${col1}` : col0);
-              }
-            }
-            document.getElementById('modal-paste-area').value = textBuffer.join('\n');
-            updateModalLiveCounter();
-            showToast(`Loaded ${textBuffer.length} rows from Excel`);
-          } catch (err) {
-            alert('Error parsing Excel spreadsheet: ' + err.message);
-          }
-        };
-        reader.readAsArrayBuffer(file);
+    function appendTextToPasteArea(newText) {
+      const pasteArea = document.getElementById('modal-paste-area');
+      const cleanNew = (newText || '').trim();
+      if (!cleanNew) return;
+      const existing = (pasteArea.value || '').trimEnd();
+      if (existing) {
+        pasteArea.value = existing + '\n' + cleanNew;
       } else {
-        reader.onload = (e) => {
-          document.getElementById('modal-paste-area').value = e.target.result;
-          updateModalLiveCounter();
-          showToast(`Loaded file ${file.name}`);
-        };
-        reader.readAsText(file);
+        pasteArea.value = cleanNew;
+      }
+      updateModalLiveCounter();
+    }
+
+    function readFileContent(file) {
+      return new Promise((resolve, reject) => {
+        const isExcel = file.name.endsWith('.xlsx') || file.name.endsWith('.xls');
+        const reader = new FileReader();
+
+        if (isExcel && typeof XLSX !== 'undefined') {
+          reader.onload = (e) => {
+            try {
+              const data = new Uint8Array(e.target.result);
+              const workbook = XLSX.read(data, { type: 'array' });
+              const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+              const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+              
+              let textBuffer = [];
+              for (const row of rows) {
+                if (Array.isArray(row) && row.length > 0) {
+                  const col0 = String(row[0] || '').trim();
+                  const col1 = row.length > 1 ? String(row[1] || '').trim() : '';
+                  if (col0) textBuffer.push(col1 ? `${col0}\t${col1}` : col0);
+                }
+              }
+              resolve({ text: textBuffer.join('\n'), count: textBuffer.length, name: file.name });
+            } catch (err) {
+              reject(err);
+            }
+          };
+          reader.onerror = () => reject(new Error('Failed to read ' + file.name));
+          reader.readAsArrayBuffer(file);
+        } else {
+          reader.onload = (e) => {
+            const text = String(e.target.result || '').trim();
+            const lines = text ? text.split(/\r?\n/).filter(l => l.trim().length > 0) : [];
+            resolve({ text, count: lines.length, name: file.name });
+          };
+          reader.onerror = () => reject(new Error('Failed to read ' + file.name));
+          reader.readAsText(file);
+        }
+      });
+    }
+
+    async function handleFiles(files) {
+      if (!files || files.length === 0) return;
+      let loadedLines = 0;
+      let fileNames = [];
+
+      for (const file of files) {
+        try {
+          const res = await readFileContent(file);
+          if (res && res.text) {
+            appendTextToPasteArea(res.text);
+            loadedLines += res.count;
+            fileNames.push(res.name);
+          }
+        } catch (err) {
+          console.error('Error parsing file:', file.name, err);
+          alert(`Error parsing file ${file.name}: ${err.message}`);
+        }
+      }
+
+      if (fileNames.length === 1) {
+        showToast(`Appended ${loadedLines} lines from ${fileNames[0]}`);
+      } else if (fileNames.length > 1) {
+        showToast(`Appended ${loadedLines} lines from ${fileNames.length} files`);
       }
     }
 

@@ -25,7 +25,7 @@ test('index.html exists and contains necessary panels, UI markers, and features'
   assert.match(html, /listNames/);
 
   // Version in title
-  assert.match(html, /v1\.4\.2/i);
+  assert.match(html, /v1\.4\.3/i);
 
   // Column sorting feature & persistence
   assert.match(html, /toggleSort/);
@@ -65,4 +65,14 @@ test('index.html exists and contains necessary panels, UI markers, and features'
 
   // Timestamp on export files
   assert.match(html, /getExportTimestampString/);
+
+  // swapListsAB swaps list titles and updates titles
+  assert.match(html, /swapListsAB[\s\S]*?state\.listNames\.listA[\s\S]*?state\.listNames\.listB[\s\S]*?updateListTitles/);
+
+  // Multi-file drag & drop with multiple attribute on file input
+  assert.match(html, /id="modal-file-input"[^>]*multiple/);
+
+  // Multi-file handling and append logic
+  assert.match(html, /handleFiles/);
+  assert.match(html, /appendTextToPasteArea/);
 });
