@@ -42,6 +42,7 @@ A standalone, high-performance HTML/JS/CSS tool for comparing two lists of Vehic
 7. **Spacious Add & Batch Import Modal with Multi-File Append:**
    - Large, comfortable vertical modal (`86vh` height, max 900px width) with smooth scrollbar.
    - Live counter dynamically reporting **"Lines: X | Valid VINs detected: Y"** as you type or paste.
+   - **Source File Column:** Imported records show their file name in each panel; it is saved with the workspace and included in CSV and Excel exports. Manually entered records have a blank file name.
    - **Multi-File Drag & Drop / Selection:** Drag and drop multiple `.xlsx`, `.xls`, `.csv`, `.txt` files at once or drop additional files subsequently. Existing entries in the paste box are preserved and new lines are appended automatically.
    - 1-click **"📋 Paste Clipboard"** and **"Clear"** shortcuts.
 8. **List Swap (A ⇄ B) with Title, Sort & Filter Swapping:**

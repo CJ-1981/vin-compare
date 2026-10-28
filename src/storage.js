@@ -31,6 +31,7 @@ export function validateAndMigrateState(raw) {
       vin: String(item.vin).trim().toUpperCase(),
       rawVin: item.rawVin || item.vin,
       note: typeof item.note === 'string' ? item.note : '',
+      fileName: typeof item.fileName === 'string' ? item.fileName : '',
       addedAt: typeof item.addedAt === 'number' ? item.addedAt : Date.now()
     }));
   };

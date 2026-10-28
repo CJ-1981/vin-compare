@@ -821,6 +821,7 @@
               <th id="th-a-vin" class="sortable" onclick="toggleSort('listA', 'vin')">VIN <span class="sort-icon">↕</span></th>
               <th id="th-a-status" class="sortable" style="width: 100px;" onclick="toggleSort('listA', 'status')">Status <span class="sort-icon">↕</span></th>
               <th id="th-a-note" class="sortable" onclick="toggleSort('listA', 'note')">Note (Editable) <span class="sort-icon">↕</span></th>
+              <th id="th-a-fileName" class="sortable" onclick="toggleSort('listA', 'fileName')">File Name <span class="sort-icon">↕</span></th>
               <th style="width: 32px;"></th>
             </tr>
           </thead>
@@ -881,6 +882,7 @@
               <th id="th-b-vin" class="sortable" onclick="toggleSort('listB', 'vin')">VIN <span class="sort-icon">↕</span></th>
               <th id="th-b-status" class="sortable" style="width: 100px;" onclick="toggleSort('listB', 'status')">Status <span class="sort-icon">↕</span></th>
               <th id="th-b-note" class="sortable" onclick="toggleSort('listB', 'note')">Note (Editable) <span class="sort-icon">↕</span></th>
+              <th id="th-b-fileName" class="sortable" onclick="toggleSort('listB', 'fileName')">File Name <span class="sort-icon">↕</span></th>
               <th style="width: 32px;"></th>
             </tr>
           </thead>
@@ -941,6 +943,7 @@
               <th id="th-c-vin" class="sortable" onclick="toggleSort('listC', 'vin')">VIN (Test Car) <span class="sort-icon">↕</span></th>
               <th id="th-c-status" class="sortable" style="width: 110px;" onclick="toggleSort('listC', 'status')">Detected In <span class="sort-icon">↕</span></th>
               <th id="th-c-note" class="sortable" onclick="toggleSort('listC', 'note')">Note (Editable) <span class="sort-icon">↕</span></th>
+              <th id="th-c-fileName" class="sortable" onclick="toggleSort('listC', 'fileName')">File Name <span class="sort-icon">↕</span></th>
               <th style="width: 32px;"></th>
             </tr>
           </thead>
@@ -1439,7 +1442,7 @@
 
     function updateSortHeaderUI(listKey) {
       const prefix = listKey === 'listA' ? 'th-a-' : (listKey === 'listB' ? 'th-b-' : 'th-c-');
-      const columns = ['index', 'vin', 'status', 'note'];
+      const columns = ['index', 'vin', 'status', 'note', 'fileName'];
       const current = sortState[listKey];
 
       columns.forEach(col => {
@@ -1618,7 +1621,7 @@
         if (searchVal) {
           const matchVin = item.vin.toLowerCase().includes(searchVal);
           const matchNote = (item.note || '').toLowerCase().includes(searchVal);
-          return matchVin || matchNote;
+          return matchVin || matchNote || (item.fileName || '').toLowerCase().includes(searchVal);
         }
         return true;
       });
@@ -1636,6 +1639,7 @@
           if (currentSort.column === 'status') {
             return a.status.localeCompare(b.status) * dir;
           }
+          if (currentSort.column === 'fileName') return (a.item.fileName || '').localeCompare(b.item.fileName || '') * dir;
           if (currentSort.column === 'note') {
             const noteA = a.item.note || '';
             const noteB = b.item.note || '';
@@ -1663,9 +1667,9 @@
 
       if (filtered.length === 0) {
         if (activeStatuses.size === 0) {
-          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 24px; color: var(--text-muted);">No statuses selected. Use the filter dropdown to select at least one status.</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 24px; color: var(--text-muted);">No statuses selected. Use the filter dropdown to select at least one status.</td></tr>`;
         } else {
-          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 24px; color: var(--text-muted);">No records match the current filter</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 24px; color: var(--text-muted);">No records match the current filter</td></tr>`;
         }
         return;
       }
@@ -1689,6 +1693,7 @@
                 onkeydown="if(event.key==='Enter'){ this.blur(); }"
                 onchange="updateNote('${listKey}', '${item.id}', this.value)">
             </td>
+            <td>${escapeHtml(item.fileName || '')}</td>
             <td style="text-align:center;">
               <button class="btn-danger" style="border:none; cursor:pointer; font-size:0.85rem;" title="Delete" onclick="deleteItem('${listKey}', '${item.id}')">✕</button>
             </td>
@@ -1736,7 +1741,10 @@
       currentModalTarget = listKey;
       const targetName = state.listNames[listKey] || listKey;
       document.getElementById('modal-target-title').textContent = '📋 Add / Import VINs into ' + targetName;
-      document.getElementById('modal-paste-area').value = '';
+      const area = document.getElementById('modal-paste-area');
+      area.value = '';
+      area.sourceText = '';
+      area.sourceFiles = [];
       document.getElementById('modal-file-input').value = '';
       updateModalLiveCounter();
       document.getElementById('batch-paste-modal').classList.add('active');
@@ -1747,7 +1755,21 @@
       document.getElementById('batch-paste-modal').classList.remove('active');
     }
 
+    // Preserve source labels for unchanged characters when the import text is edited.
+    function syncImportSources(area) {
+      const previous = area.sourceText || '';
+      const current = area.value;
+      const sources = area.sourceFiles || [];
+      let start = 0;
+      while (start < previous.length && start < current.length && previous[start] === current[start]) start++;
+      let end = 0;
+      while (end < previous.length - start && end < current.length - start && previous[previous.length - 1 - end] === current[current.length - 1 - end]) end++;
+      area.sourceFiles = sources.slice(0, start).concat(Array(current.length - start - end).fill(''), end ? sources.slice(previous.length - end) : []);
+      area.sourceText = current;
+    }
+
     function updateModalLiveCounter() {
+      syncImportSources(document.getElementById('modal-paste-area'));
       const text = document.getElementById('modal-paste-area').value;
       const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0).length;
       const parsed = parsePastedText(text);
@@ -1776,7 +1798,14 @@
     function submitImport() {
       const pasteText = document.getElementById('modal-paste-area').value;
       const mode = document.querySelector('input[name="import-mode"]:checked').value;
-      const parsed = parsePastedText(pasteText);
+      const area = document.getElementById('modal-paste-area');
+      syncImportSources(area);
+      let offset = 0;
+      const parsed = pasteText.split('\n').flatMap(line => {
+        const fileName = area.sourceFiles.slice(offset, offset + line.length).find(Boolean) || '';
+        offset += line.length + 1;
+        return parsePastedText(line).map(item => ({ ...item, fileName }));
+      });
 
       if (parsed.length === 0) {
         alert("Please paste or upload at least one valid VIN.");
@@ -1788,6 +1817,7 @@
         vin: item.vin,
         rawVin: item.vin,
         note: item.note || '',
+        fileName: item.fileName || '',
         addedAt: Date.now()
       }));
 
@@ -1831,8 +1861,9 @@
       event.target.value = '';
     }
 
-    function appendTextToPasteArea(newText) {
+    function appendTextToPasteArea(newText, fileName = '') {
       const pasteArea = document.getElementById('modal-paste-area');
+      syncImportSources(pasteArea);
       const cleanNew = (newText || '').trim();
       if (!cleanNew) return;
       const existing = (pasteArea.value || '').trimEnd();
@@ -1840,6 +1871,11 @@
         pasteArea.value = existing + '\n' + cleanNew;
       } else {
         pasteArea.value = cleanNew;
+      }
+      syncImportSources(pasteArea);
+      if (fileName) {
+        const start = pasteArea.value.length - cleanNew.length;
+        pasteArea.sourceFiles.fill(fileName, start);
       }
       updateModalLiveCounter();
     }
@@ -1893,7 +1929,7 @@
         try {
           const res = await readFileContent(file);
           if (res && res.text) {
-            appendTextToPasteArea(res.text);
+            appendTextToPasteArea(res.text, res.name);
             loadedLines += res.count;
             fileNames.push(res.name);
           }
@@ -1957,37 +1993,37 @@
       XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(summaryData), 'Summary');
 
       // Matched Sheet
-      const matchedRows = [['VIN', 'Source', 'Note']];
+      const matchedRows = [['VIN', 'Source', 'Note', 'File Name']];
       state.listA.forEach(r => {
         const s = comparison.statusMapA.get(r.id);
         if (s === 'MATCHED') {
-          matchedRows.push([r.vin, `Matched in ${nameA} & ${nameB}`, r.note || '']);
+          matchedRows.push([r.vin, `Matched in ${nameA} & ${nameB}`, r.note || '', r.fileName || '']);
         } else if (s === 'MATCHED_TEST_VEHICLE') {
-          matchedRows.push([r.vin, `Matched in ${nameA} & ${nameB} (Test Vehicle)`, r.note || '']);
+          matchedRows.push([r.vin, `Matched in ${nameA} & ${nameB} (Test Vehicle)`, r.note || '', r.fileName || '']);
         }
       });
       XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(matchedRows), 'Matched Overlap');
 
       // Only in A
-      const onlyARows = [['VIN', 'Status', 'Note']];
+      const onlyARows = [['VIN', 'Status', 'Note', 'File Name']];
       state.listA.forEach(r => {
         if (comparison.statusMapA.get(r.id) === 'ONLY_IN_A') {
-          onlyARows.push([r.vin, `Only in ${nameA}`, r.note || '']);
+          onlyARows.push([r.vin, `Only in ${nameA}`, r.note || '', r.fileName || '']);
         }
       });
       XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(onlyARows), sanitizeExcelSheetName(`Only in ${nameA}`, 'Only in A'));
 
       // Only in B
-      const onlyBRows = [['VIN', 'Status', 'Note']];
+      const onlyBRows = [['VIN', 'Status', 'Note', 'File Name']];
       state.listB.forEach(r => {
         if (comparison.statusMapB.get(r.id) === 'ONLY_IN_B') {
-          onlyBRows.push([r.vin, `Only in ${nameB}`, r.note || '']);
+          onlyBRows.push([r.vin, `Only in ${nameB}`, r.note || '', r.fileName || '']);
         }
       });
       XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(onlyBRows), sanitizeExcelSheetName(`Only in ${nameB}`, 'Only in B'));
 
       // Test Vehicles
-      const testRows = [['VIN', 'Detected Presence', 'Note']];
+      const testRows = [['VIN', 'Detected Presence', 'Note', 'File Name']];
       state.listC.forEach(r => {
         const detected = comparison.statusMapC.get(r.id);
         let presenceText = 'NOT_IN_LISTS';
@@ -1995,7 +2031,7 @@
         else if (detected === 'IN_A_ONLY') presenceText = `Found in ${nameA} Only`;
         else if (detected === 'IN_B_ONLY') presenceText = `Found in ${nameB} Only`;
 
-        testRows.push([r.vin, presenceText, r.note || '']);
+        testRows.push([r.vin, presenceText, r.note || '', r.fileName || '']);
       });
       XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(testRows), sanitizeExcelSheetName(nameC, 'Test Vehicles'));
 
@@ -2009,10 +2045,10 @@
       const nameB = state.listNames.listB || 'List B';
       const nameC = state.listNames.listC || 'Test Vehicles';
 
-      const rows = [['List', 'VIN', 'Status', 'Note']];
-      state.listA.forEach(r => rows.push([nameA, r.vin, comparison.statusMapA.get(r.id) || '', r.note || '']));
-      state.listB.forEach(r => rows.push([nameB, r.vin, comparison.statusMapB.get(r.id) || '', r.note || '']));
-      state.listC.forEach(r => rows.push([nameC, r.vin, comparison.statusMapC.get(r.id) || '', r.note || '']));
+      const rows = [['List', 'VIN', 'Status', 'Note', 'File Name']];
+      state.listA.forEach(r => rows.push([nameA, r.vin, comparison.statusMapA.get(r.id) || '', r.note || '', r.fileName || '']));
+      state.listB.forEach(r => rows.push([nameB, r.vin, comparison.statusMapB.get(r.id) || '', r.note || '', r.fileName || '']));
+      state.listC.forEach(r => rows.push([nameC, r.vin, comparison.statusMapC.get(r.id) || '', r.note || '', r.fileName || '']));
 
       const csvContent = rows.map(r => r.map(f => `"${String(f).replace(/"/g, '""')}"`).join(',')).join('\r\n');
       downloadFile(csvContent, `VIN_Comparison_Master_${getExportTimestampString()}.csv`, 'text/csv;charset=utf-8;');
