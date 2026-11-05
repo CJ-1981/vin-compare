@@ -25,11 +25,23 @@ test('index.html exists and contains necessary panels, UI markers, and features'
   assert.match(html, /listNames/);
 
   // Version in title
-  assert.match(html, /v1\.4\.6/i);
+  assert.match(html, /v1\.4\.7/i);
 
   // Redundant VIN check on import: skip duplicates within the import and against the target list
   assert.match(html, /deduplicateVinRecords/);
   assert.match(html, /formatDuplicateSkipSummary/);
+
+  // Stable panel header: toolbar buttons never wrap when a filter widens the count badge
+  assert.match(html, /\.panel-toolbar\s*\{[^}]*flex-wrap:\s*nowrap/);
+  assert.match(html, /\.panel-toolbar\s*\{[^}]*flex-shrink:\s*0/);
+
+  // Draggable resizer handles between panels with persisted widths
+  assert.match(html, /id="resizer-ab"/);
+  assert.match(html, /id="resizer-bc"/);
+  assert.match(html, /startPanelResize/);
+  assert.match(html, /applyPanelWidths/);
+  assert.match(html, /parsed\.panelWidths/);
+  assert.match(html, /panel-resizing/);
 
   // Column sorting feature & persistence
   assert.match(html, /toggleSort/);

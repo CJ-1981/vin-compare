@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VIN Tri-Panel Comparator & Test Vehicle Filter v1.4.6</title>
+  <title>VIN Tri-Panel Comparator & Test Vehicle Filter v1.4.7</title>
   <!-- Optional SheetJS for XLSX support with fallback -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
@@ -323,19 +323,50 @@
       margin-left: auto;
     }
 
-    /* Main Tri-Panel Grid */
+    /* Main Tri-Panel Grid: panel tracks separated by draggable resizer tracks */
     main {
       flex: 1;
       padding: 16px;
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
+      grid-template-columns: 1fr 16px 1fr 16px 1fr;
       overflow-x: auto;
+    }
+
+    .panel-resizer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: col-resize;
+      touch-action: none;
+    }
+
+    .panel-resizer::before {
+      content: '';
+      width: 4px;
+      height: 64px;
+      border-radius: 4px;
+      background: var(--border-color);
+      transition: background 0.15s ease, height 0.15s ease;
+    }
+
+    .panel-resizer:hover::before,
+    .panel-resizer.dragging::before {
+      background: var(--accent-blue);
+      height: 120px;
+    }
+
+    body.panel-resizing {
+      cursor: col-resize;
+      user-select: none;
+      -webkit-user-select: none;
     }
 
     @media (max-width: 1100px) {
       main {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr !important; /* stacked layout wins over inline resize widths */
+      }
+      .panel-resizer {
+        display: none;
       }
     }
 
@@ -402,7 +433,10 @@
     .panel-toolbar {
       display: flex;
       gap: 6px;
-      flex-wrap: wrap;
+      /* Never wrap or shrink: a wider count badge (e.g. "12 / 4826" when a filter
+         is active) must not push the Clear button onto a second header row. */
+      flex-wrap: nowrap;
+      flex-shrink: 0;
     }
 
     .panel-filter-search {
@@ -706,7 +740,7 @@
     <div class="header-top">
       <div class="brand-title">
         <span>🚗 VIN Comparator</span>
-        <span class="version-badge">v1.4.6</span>
+        <span class="version-badge">v1.4.7</span>
         <span class="brand-badge">3-Panel Diff & Test Vehicles</span>
       </div>
       <div class="header-actions">
@@ -830,6 +864,8 @@
       </div>
     </section>
 
+    <div class="panel-resizer" id="resizer-ab" title="Drag to adjust panel widths (double-click to reset)"></div>
+
     <!-- Panel B -->
     <section id="panel-b" class="panel">
       <div class="panel-header">
@@ -890,6 +926,8 @@
         </table>
       </div>
     </section>
+
+    <div class="panel-resizer" id="resizer-bc" title="Drag to adjust panel widths (double-click to reset)"></div>
 
     <!-- Panel C: Test Vehicles -->
     <section id="panel-c" class="panel">
@@ -1031,6 +1069,7 @@
         listB: [...DEFAULT_FILTERS.listB],
         listC: [...DEFAULT_FILTERS.listC]
       },
+      panelWidths: null, // [aPct, bPct, cPct] once the user drags a resizer
       settings: {
         theme: 'dark',
         autoTrimUpper: true,
@@ -1327,6 +1366,7 @@
             filterState.listC = new Set(state.filterState.listC);
           }
           if (parsed.settings) state.settings = { ...state.settings, ...parsed.settings };
+          if (isValidPanelWidths(parsed.panelWidths)) state.panelWidths = parsed.panelWidths;
         } else {
           isFresh = true;
         }
@@ -1334,6 +1374,7 @@
         console.error('Failed to load state', e);
       }
       applyTheme(state.settings.theme);
+      applyPanelWidths();
       updateListTitles();
       syncFilterCheckboxes();
 
@@ -2152,6 +2193,10 @@
               filterState.listC = new Set(state.filterState.listC);
               syncFilterCheckboxes();
             }
+            if (isValidPanelWidths(parsed.panelWidths)) {
+              state.panelWidths = parsed.panelWidths;
+              applyPanelWidths();
+            }
             updateListTitles();
             recalculateAndRender();
             showToast('Workspace restored successfully');
@@ -2231,6 +2276,73 @@
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;');
     }
+
+    // ----------------- Panel Resizing ----------------- //
+    const PANEL_RESIZE_MIN_PCT = 12;
+
+    function isValidPanelWidths(widths) {
+      return Array.isArray(widths) && widths.length === 3
+        && widths.every(w => typeof w === 'number' && isFinite(w) && w > 0);
+    }
+
+    function applyPanelWidths() {
+      const mainEl = document.querySelector('main');
+      if (!mainEl) return;
+      if (isValidPanelWidths(state.panelWidths)) {
+        const [a, b, c] = state.panelWidths;
+        // Panels share the space left of the two 16px resizer tracks so the
+        // columns never exceed the grid container (no horizontal scrollbar).
+        mainEl.style.gridTemplateColumns =
+          `calc((100% - 32px) * ${a / 100}) 16px calc((100% - 32px) * ${b / 100}) 16px calc((100% - 32px) * ${c / 100})`;
+      } else {
+        mainEl.style.gridTemplateColumns = '';
+      }
+    }
+
+    function startPanelResize(event, leftIndex) {
+      const mainEl = document.querySelector('main');
+      const flexibleWidth = mainEl ? mainEl.clientWidth - 32 : 0; // minus resizer tracks
+      if (flexibleWidth <= 0) return;
+      event.preventDefault();
+      const startWidths = isValidPanelWidths(state.panelWidths) ? [...state.panelWidths] : [100 / 3, 100 / 3, 100 / 3];
+      const startX = event.clientX;
+      const pairTotal = startWidths[leftIndex] + startWidths[leftIndex + 1];
+      const handle = event.currentTarget;
+      handle.classList.add('dragging');
+      document.body.classList.add('panel-resizing');
+
+      const onMove = (moveEvent) => {
+        const deltaPct = (moveEvent.clientX - startX) / flexibleWidth * 100;
+        const left = Math.min(Math.max(startWidths[leftIndex] + deltaPct, PANEL_RESIZE_MIN_PCT), pairTotal - PANEL_RESIZE_MIN_PCT);
+        state.panelWidths = startWidths.map((start, i) => {
+          if (i === leftIndex) return left;
+          if (i === leftIndex + 1) return pairTotal - left;
+          return start;
+        });
+        applyPanelWidths();
+      };
+      const onUp = () => {
+        handle.classList.remove('dragging');
+        document.body.classList.remove('panel-resizing');
+        document.removeEventListener('pointermove', onMove);
+        document.removeEventListener('pointerup', onUp);
+        scheduleSave();
+      };
+      document.addEventListener('pointermove', onMove);
+      document.addEventListener('pointerup', onUp);
+    }
+
+    function resetPanelWidths() {
+      state.panelWidths = null;
+      applyPanelWidths();
+      scheduleSave();
+      showToast('Panel widths reset');
+    }
+
+    document.getElementById('resizer-ab').addEventListener('pointerdown', (e) => startPanelResize(e, 0));
+    document.getElementById('resizer-bc').addEventListener('pointerdown', (e) => startPanelResize(e, 1));
+    document.getElementById('resizer-ab').addEventListener('dblclick', resetPanelWidths);
+    document.getElementById('resizer-bc').addEventListener('dblclick', resetPanelWidths);
 
     // Initialize application on page load
     window.addEventListener('DOMContentLoaded', loadState);

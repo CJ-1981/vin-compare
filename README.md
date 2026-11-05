@@ -1,4 +1,4 @@
-# 🚗 VIN Tri-Panel Comparator & Test Vehicle Filter `v1.4.6`
+# 🚗 VIN Tri-Panel Comparator & Test Vehicle Filter `v1.4.7`
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-2ea44f?logo=github&style=flat-square)](https://cj-1981.github.io/vin-compare/)
 [![Deploy to GitHub Pages](https://github.com/CJ-1981/vin-compare/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/CJ-1981/vin-compare/actions/workflows/deploy-pages.yml)
@@ -55,7 +55,12 @@ A standalone, high-performance HTML/JS/CSS tool for comparing two lists of Vehic
 10. **Local Offline Persistence:**
     - Automatic debounced synchronization to browser `localStorage`.
     - Full workspace JSON backup & restore.
-11. **Timestamped Excel, CSV & JSON Export:**
+11. **Draggable Panel Width Handles:**
+    - Slim drag handles between the three panels let you redistribute horizontal space (drag to resize, double-click to reset to equal thirds).
+    - Custom widths persist across browser reloads and workspace JSON backup/restore and are clamped so panels never collapse below a usable minimum.
+    - On narrow screens (`≤1100px`) panels stack vertically and the handles hide automatically.
+    - Panel headers stay pixel-stable while filtering: activating a filter widens only the count badge (`498 / 4826`) and highlights the filter button — toolbar buttons never wrap onto a second row or shift layout.
+12. **Timestamped Excel, CSV & JSON Export:**
     - All export filenames automatically append a complete timestamp (`YYYY-MM-DD_HHmmss`) to ensure unique, non-overwriting, chronologically ordered files.
     - **Master Excel (.xlsx):** Multi-sheet workbook (`VIN_Comparison_Report_YYYY-MM-DD_HHmmss.xlsx`) with Summary metrics, Matched Overlap, Only in List A, Only in List B, and Test Vehicles.
     - **Master CSV (.csv):** Consolidated export (`VIN_Comparison_Master_YYYY-MM-DD_HHmmss.csv`) with all columns, statuses, and custom list names.
