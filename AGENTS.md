@@ -7,7 +7,7 @@
 ## Build, Test, and Development Commands
 
 - Open `index.html` directly in a browser to run the app locally; no build step or server is required.
-- Run `npm test` to execute all `tests/*.test.js` files with Node's built-in test runner. CI uses Node.js 20.
+- Run `npm test` to execute all `tests/*.test.js` files with Node's built-in test runner. CI uses Node.js 24.
 - Run `node --test tests/engine.test.js` to focus on one test file.
 
 The Pages workflow runs tests before deploying the repository on pushes to `main`. SheetJS is loaded from a CDN for spreadsheet support; check the fallback behavior when working offline.
