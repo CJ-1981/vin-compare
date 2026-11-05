@@ -20,7 +20,7 @@ test('multiple imported files retain their own filenames alongside manual entrie
     readFileContent: async file => ({ text: file.text, count: 1, name: file.name }),
     alert() { throw new Error('Unexpected alert'); }, console
   });
-  vm.runInContext(['normalizeVin', 'parsePastedText', 'syncImportSources', 'appendTextToPasteArea', 'handleFiles', 'submitImport'].map(functionSource).join('\n'), context);
+  vm.runInContext(['normalizeVin', 'parsePastedText', 'deduplicateVinRecords', 'formatDuplicateSkipSummary', 'syncImportSources', 'appendTextToPasteArea', 'handleFiles', 'submitImport'].map(functionSource).join('\n'), context);
   area.value = 'MANUAL1';
   await context.handleFiles([{ name: 'first.csv', text: 'VIN1,VIN2' }, { name: 'second.txt', text: 'VIN3' }]);
   context.submitImport();

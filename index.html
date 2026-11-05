@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VIN Tri-Panel Comparator & Test Vehicle Filter v1.4.5</title>
+  <title>VIN Tri-Panel Comparator & Test Vehicle Filter v1.4.6</title>
   <!-- Optional SheetJS for XLSX support with fallback -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
@@ -706,7 +706,7 @@
     <div class="header-top">
       <div class="brand-title">
         <span>🚗 VIN Comparator</span>
-        <span class="version-badge">v1.4.5</span>
+        <span class="version-badge">v1.4.6</span>
         <span class="brand-badge">3-Panel Diff & Test Vehicles</span>
       </div>
       <div class="header-actions">
@@ -1096,6 +1096,41 @@
         }
       }
       return results;
+    }
+
+    // Redundant VIN check for imports: keeps only VINs that are neither repeated
+    // within the incoming batch nor already present in the target list.
+    // The first occurrence of a VIN wins (its note and file name are kept).
+    function deduplicateVinRecords(records = [], existingVins = []) {
+      const existing = new Set(existingVins.map(v => normalizeVin(v)).filter(Boolean));
+      const batchSeen = new Set();
+      const unique = [];
+      let duplicatesInBatch = 0;
+      let duplicatesExisting = 0;
+
+      for (const record of records) {
+        const vin = normalizeVin(record && record.vin);
+        if (!vin) continue;
+        if (batchSeen.has(vin)) {
+          duplicatesInBatch++;
+          continue;
+        }
+        if (existing.has(vin)) {
+          duplicatesExisting++;
+          continue;
+        }
+        batchSeen.add(vin);
+        unique.push({ ...record, vin });
+      }
+
+      return { unique, duplicatesInBatch, duplicatesExisting };
+    }
+
+    function formatDuplicateSkipSummary(duplicatesInBatch, duplicatesExisting) {
+      const parts = [];
+      if (duplicatesExisting > 0) parts.push(`${duplicatesExisting} already in list`);
+      if (duplicatesInBatch > 0) parts.push(`${duplicatesInBatch} repeated in import`);
+      return parts.join(', ');
     }
 
     function computeComparison(listA = [], listB = [], listC = []) {
@@ -1812,7 +1847,18 @@
         return;
       }
 
-      const records = parsed.map(item => ({
+      // Redundant VIN check: skip VINs repeated within the import and, in append
+      // mode, VINs already imported into the target list. Only unique VINs are added.
+      const existingVins = mode === 'append' ? state[currentModalTarget].map(r => r.vin) : [];
+      const { unique, duplicatesInBatch, duplicatesExisting } = deduplicateVinRecords(parsed, existingVins);
+      const duplicatesSkipped = duplicatesInBatch + duplicatesExisting;
+
+      if (unique.length === 0) {
+        alert(`All ${parsed.length} VINs were skipped as duplicates (${formatDuplicateSkipSummary(duplicatesInBatch, duplicatesExisting)}). Nothing was imported.`);
+        return;
+      }
+
+      const records = unique.map(item => ({
         id: Math.random().toString(36).substring(2, 9) + Date.now().toString(36),
         vin: item.vin,
         rawVin: item.vin,
@@ -1839,7 +1885,12 @@
 
       closeImportModal();
       recalculateAndRender();
-      showToast(`Added ${records.length} VINs to ${state.listNames[currentModalTarget] || currentModalTarget}`);
+      const targetName = state.listNames[currentModalTarget] || currentModalTarget;
+      if (duplicatesSkipped > 0) {
+        showToast(`Added ${records.length} VINs to ${targetName} (skipped ${duplicatesSkipped} duplicate${duplicatesSkipped === 1 ? '' : 's'}: ${formatDuplicateSkipSummary(duplicatesInBatch, duplicatesExisting)})`);
+      } else {
+        showToast(`Added ${records.length} VINs to ${targetName}`);
+      }
     }
 
     // Drag and Drop & File Upload handling

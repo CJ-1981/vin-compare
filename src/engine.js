@@ -44,6 +44,34 @@ export function parsePastedText(text) {
   return results;
 }
 
+// Redundant VIN check for imports: keeps only VINs that are neither repeated
+// within the incoming batch nor already present in the target list.
+// The first occurrence of a VIN wins (its note and file name are kept).
+export function deduplicateVinRecords(records = [], existingVins = []) {
+  const existing = new Set(existingVins.map(v => normalizeVin(v)).filter(Boolean));
+  const batchSeen = new Set();
+  const unique = [];
+  let duplicatesInBatch = 0;
+  let duplicatesExisting = 0;
+
+  for (const record of records) {
+    const vin = normalizeVin(record && record.vin);
+    if (!vin) continue;
+    if (batchSeen.has(vin)) {
+      duplicatesInBatch++;
+      continue;
+    }
+    if (existing.has(vin)) {
+      duplicatesExisting++;
+      continue;
+    }
+    batchSeen.add(vin);
+    unique.push({ ...record, vin });
+  }
+
+  return { unique, duplicatesInBatch, duplicatesExisting };
+}
+
 export function computeComparison(listA = [], listB = [], listC = []) {
   const setC = new Set(listC.map(r => r.vin).filter(Boolean));
   const setB = new Set(listB.map(r => r.vin).filter(Boolean));

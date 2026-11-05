@@ -25,7 +25,11 @@ test('index.html exists and contains necessary panels, UI markers, and features'
   assert.match(html, /listNames/);
 
   // Version in title
-  assert.match(html, /v1\.4\.5/i);
+  assert.match(html, /v1\.4\.6/i);
+
+  // Redundant VIN check on import: skip duplicates within the import and against the target list
+  assert.match(html, /deduplicateVinRecords/);
+  assert.match(html, /formatDuplicateSkipSummary/);
 
   // Column sorting feature & persistence
   assert.match(html, /toggleSort/);

@@ -1,8 +1,8 @@
-# 🚗 VIN Tri-Panel Comparator & Test Vehicle Filter `v1.4.5`
+# 🚗 VIN Tri-Panel Comparator & Test Vehicle Filter `v1.4.6`
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-2ea44f?logo=github&style=flat-square)](https://cj-1981.github.io/vin-compare/)
 [![Deploy to GitHub Pages](https://github.com/CJ-1981/vin-compare/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/CJ-1981/vin-compare/actions/workflows/deploy-pages.yml)
-[![Tests Passing](https://img.shields.io/badge/Tests-9%2F9%20Passing-brightgreen?style=flat-square)](https://github.com/CJ-1981/vin-compare)
+[![Tests Passing](https://img.shields.io/badge/Tests-17%2F17%20Passing-brightgreen?style=flat-square)](https://github.com/CJ-1981/vin-compare)
 
 > **Live Web App:** [https://cj-1981.github.io/vin-compare/](https://cj-1981.github.io/vin-compare/)
 
@@ -42,6 +42,7 @@ A standalone, high-performance HTML/JS/CSS tool for comparing two lists of Vehic
 7. **Spacious Add & Batch Import Modal with Multi-File Append:**
    - Large, comfortable vertical modal (`86vh` height, max 900px width) with smooth scrollbar.
    - Live counter dynamically reporting **"Lines: X | Valid VINs detected: Y"** as you type or paste.
+   - **Redundant VIN Check:** On confirm, only unique VINs are imported. VINs repeated within the import batch and VINs already present in the target list (append mode) are skipped, and the toast reports exactly how many duplicates of each kind were omitted. The first occurrence of a VIN wins, keeping its note and source file name.
    - **Source File Column:** Imported records show their file name in each panel; it is saved with the workspace and included in CSV and Excel exports. Manually entered records have a blank file name.
    - **Multi-File Drag & Drop / Selection:** Drag and drop multiple `.xlsx`, `.xls`, `.csv`, `.txt` files at once or drop additional files subsequently. Existing entries in the paste box are preserved and new lines are appended automatically.
    - 1-click **"📋 Paste Clipboard"** and **"Clear"** shortcuts.
