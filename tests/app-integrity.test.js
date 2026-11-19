@@ -25,7 +25,20 @@ test('index.html exists and contains necessary panels, UI markers, and features'
   assert.match(html, /listNames/);
 
   // Version in title
-  assert.match(html, /v1\.4\.7/i);
+  assert.match(html, /v1\.4\.10/i);
+
+  // Copy All / Copy Filtered buttons per panel backed by shared visible-records logic
+  assert.match(html, /copyPanelVins\('listA'\)/);
+  assert.match(html, /copyPanelVins\('listA', 'filtered'\)/);
+  assert.match(html, /copyPanelVins\('listB', 'filtered'\)/);
+  assert.match(html, /copyPanelVins\('listC', 'filtered'\)/);
+  assert.match(html, /getVisibleRecords/);
+
+  // Copy buttons grey out when redundant (filtered) or when zero entries are visible
+  assert.match(html, /id="copy-all-a"/);
+  assert.match(html, /id="copy-filtered-a"/);
+  assert.match(html, /updateCopyButtonsState/);
+  assert.match(html, /\.btn:disabled/);
 
   // Redundant VIN check on import: skip duplicates within the import and against the target list
   assert.match(html, /deduplicateVinRecords/);

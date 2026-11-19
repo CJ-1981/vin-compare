@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VIN Tri-Panel Comparator & Test Vehicle Filter v1.4.7</title>
+  <title>VIN Tri-Panel Comparator & Test Vehicle Filter v1.4.10</title>
   <!-- Optional SheetJS for XLSX support with fallback -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
@@ -182,6 +182,15 @@
     .btn-sm {
       padding: 4px 8px;
       font-size: 0.75rem;
+    }
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      filter: grayscale(0.8);
+    }
+    .btn:disabled:hover {
+      filter: grayscale(0.8);
+      border-color: var(--border-color);
     }
 
     .btn-rename {
@@ -740,7 +749,7 @@
     <div class="header-top">
       <div class="brand-title">
         <span>🚗 VIN Comparator</span>
-        <span class="version-badge">v1.4.7</span>
+        <span class="version-badge">v1.4.10</span>
         <span class="brand-badge">3-Panel Diff & Test Vehicles</span>
       </div>
       <div class="header-actions">
@@ -814,7 +823,8 @@
           </span>
           <div class="panel-toolbar">
             <button class="btn btn-sm btn-primary" onclick="openImportModal('listA')">+ Add / Import</button>
-            <button class="btn btn-sm" onclick="copyPanelVins('listA')">📋 Copy</button>
+            <button class="btn btn-sm" id="copy-all-a" onclick="copyPanelVins('listA')">📋 Copy All</button>
+            <button class="btn btn-sm" id="copy-filtered-a" onclick="copyPanelVins('listA', 'filtered')">📋 Copy Filtered</button>
             <button class="btn btn-sm btn-danger" onclick="clearList('listA')">Clear</button>
           </div>
         </div>
@@ -877,7 +887,8 @@
           </span>
           <div class="panel-toolbar">
             <button class="btn btn-sm btn-primary" onclick="openImportModal('listB')">+ Add / Import</button>
-            <button class="btn btn-sm" onclick="copyPanelVins('listB')">📋 Copy</button>
+            <button class="btn btn-sm" id="copy-all-b" onclick="copyPanelVins('listB')">📋 Copy All</button>
+            <button class="btn btn-sm" id="copy-filtered-b" onclick="copyPanelVins('listB', 'filtered')">📋 Copy Filtered</button>
             <button class="btn btn-sm btn-danger" onclick="clearList('listB')">Clear</button>
           </div>
         </div>
@@ -940,7 +951,8 @@
           </span>
           <div class="panel-toolbar">
             <button class="btn btn-sm btn-primary" onclick="openImportModal('listC')">+ Add / Import</button>
-            <button class="btn btn-sm" onclick="copyPanelVins('listC')">📋 Copy</button>
+            <button class="btn btn-sm" id="copy-all-c" onclick="copyPanelVins('listC')">📋 Copy All</button>
+            <button class="btn btn-sm" id="copy-filtered-c" onclick="copyPanelVins('listC', 'filtered')">📋 Copy Filtered</button>
             <button class="btn btn-sm btn-danger" onclick="clearList('listC')">Clear</button>
           </div>
         </div>
@@ -1674,24 +1686,22 @@
       }
     }
 
-    function renderPanel(listKey) {
-      const tbodyId = listKey === 'listA' ? 'tbody-a' : (listKey === 'listB' ? 'tbody-b' : 'tbody-c');
+    // Records currently visible in a panel: status filter, panel search box,
+    // and the active column sort - shared by rendering and Copy Filtered.
+    function getVisibleRecords(listKey) {
       const searchId = listKey === 'listA' ? 'search-a' : (listKey === 'listB' ? 'search-b' : 'search-c');
-      
-      const tbody = document.getElementById(tbodyId);
-      const searchVal = (document.getElementById(searchId).value || '').toLowerCase().trim();
+      const searchEl = document.getElementById(searchId);
+      const searchVal = ((searchEl && searchEl.value) || '').toLowerCase().trim();
 
       const list = state[listKey] || [];
       const statusMap = listKey === 'listA' ? comparison.statusMapA : (listKey === 'listB' ? comparison.statusMapB : comparison.statusMapC);
       const activeStatuses = filterState[listKey];
 
-      let itemsWithIndex = list.map((item, originalIndex) => ({
+      const filtered = list.map((item, originalIndex) => ({
         item,
         originalIndex,
         status: statusMap.get(item.id) || ''
-      }));
-
-      let filtered = itemsWithIndex.filter(({ item, status }) => {
+      })).filter(({ item, status }) => {
         if (!activeStatuses.has(status)) return false;
 
         if (searchVal) {
@@ -1727,6 +1737,29 @@
         });
       }
 
+      return filtered;
+    }
+
+    // Copy button availability: with zero visible entries there is nothing to
+    // copy, so both buttons grey out; Copy Filtered additionally greys out when
+    // nothing is hidden, because it would duplicate Copy All.
+    function updateCopyButtonsState(listKey, visibleCount, totalCount) {
+      const filteredId = listKey === 'listA' ? 'copy-filtered-a' : (listKey === 'listB' ? 'copy-filtered-b' : 'copy-filtered-c');
+      const allId = listKey === 'listA' ? 'copy-all-a' : (listKey === 'listB' ? 'copy-all-b' : 'copy-all-c');
+      const filteredBtn = document.getElementById(filteredId);
+      const allBtn = document.getElementById(allId);
+      if (filteredBtn) filteredBtn.disabled = visibleCount === 0 || visibleCount >= totalCount;
+      if (allBtn) allBtn.disabled = visibleCount === 0;
+    }
+
+    function renderPanel(listKey) {
+      const tbodyId = listKey === 'listA' ? 'tbody-a' : (listKey === 'listB' ? 'tbody-b' : 'tbody-c');
+
+      const tbody = document.getElementById(tbodyId);
+      const list = state[listKey] || [];
+      const activeStatuses = filterState[listKey];
+      const filtered = getVisibleRecords(listKey);
+
       updateSortHeaderUI(listKey);
       updateFilterDropdownOptions(listKey);
 
@@ -1740,6 +1773,7 @@
           countBadge.textContent = `${filtered.length} / ${list.length}`;
         }
       }
+      updateCopyButtonsState(listKey, filtered.length, list.length);
 
       if (filtered.length === 0) {
         if (activeStatuses.size === 0) {
@@ -1801,15 +1835,26 @@
       }
     }
 
-    function copyPanelVins(listKey) {
+    function copyPanelVins(listKey, mode = 'all') {
       const list = state[listKey] || [];
       if (list.length === 0) {
         showToast('List is empty');
         return;
       }
-      const text = list.map(r => r.note ? `${r.vin}\t${r.note}` : r.vin).join('\n');
+      const records = mode === 'filtered'
+        ? getVisibleRecords(listKey)
+        : list.map((item, originalIndex) => ({ item, originalIndex }));
+      if (records.length === 0) {
+        showToast('No records match the current filter');
+        return;
+      }
+      const text = records.map(({ item }) => item.note ? `${item.vin}\t${item.note}` : item.vin).join('\n');
       copyText(text);
-      showToast(`Copied ${list.length} items to clipboard`);
+      if (mode === 'filtered') {
+        showToast(`Copied ${records.length} of ${list.length} filtered items to clipboard`);
+      } else {
+        showToast(`Copied ${list.length} items to clipboard`);
+      }
     }
 
     // ----------------- Enlarged Modal Logic ----------------- //
